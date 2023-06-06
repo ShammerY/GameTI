@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.tigame.GameController">
+   <children>
+      <Canvas fx:id="canvas" height="600.0" width="800.0" />
+      <Label fx:id="timeLB" contentDisplay="RIGHT" layoutX="643.0" layoutY="14.0" prefHeight="68.0" prefWidth="146.0" textFill="#53c1c3">
+         <font>
+            <Font name="Bodoni MT" size="55.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
