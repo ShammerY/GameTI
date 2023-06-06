@@ -45,7 +45,6 @@ public class GameController implements Initializable, Runnable {
         canvas.setOnKeyReleased(this::onKeyReleased);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseMoved(this::onMouseMoved);
-        canvas.setOnKeyTyped(this::onKeyTyped);
         setMaps();
         setEnemyMovement();
         time = 0;
@@ -58,32 +57,26 @@ public class GameController implements Initializable, Runnable {
         currentMap = 0;
         draw();
     }
-    private void onKeyTyped(KeyEvent event) {
-        if(event.getCode().equals(KeyCode.P)){
-            isAlive = !isAlive;
-        }
-    }
     private void setMaps(){
         maps = new ArrayList<>();
-        int[][] boundaries = new Boundaries().getMap1Boundaries();
         //________________Map 1______________________
         String uri = "file:"+GameApplication.class.getResource("forestBG/game_background_1.png").getPath();
-        maps.add(new Map(0,new Image(uri),boundaries));
+        maps.add(new Map(0,new Image(uri),new Boundaries().getMap1Boundaries()));
         //________________Map 2______________________
         uri = "file:"+GameApplication.class.getResource("forestBG/game_background_2.png").getPath();
-        maps.add(new Map(1,new Image(uri),boundaries));
+        maps.add(new Map(1,new Image(uri),new Boundaries().getMap2Boundaries()));
         maps.get(1).getEnemies().add(new Enemy(new Vector(100,230)));
         maps.get(1).getEnemies().add(new Enemy(new Vector(350,350)));
         //maps.get(1).getObstacles().add(new Obstacle(new Vector(100,300)));
         //maps.get(1).getObstacles().add(new Obstacle(new Vector(300,150)));
         //________________Map 3______________________
         uri = "file:"+GameApplication.class.getResource("forestBG/game_background_3.png").getPath();
-        maps.add(new Map(2,new Image(uri),boundaries));
+        maps.add(new Map(2,new Image(uri),new Boundaries().getMap3Boundaries()));
         maps.get(2).getEnemies().add(new Enemy(new Vector(350,350)));
         maps.get(2).getEnemies().add(new Enemy( new Vector(300,300)));
         //________________Map 4______________________
         uri = "file:"+GameApplication.class.getResource("forestBG/game_background_4.png").getPath();
-        maps.add(new Map(3,new Image(uri),boundaries));
+        maps.add(new Map(3,new Image(uri),new Boundaries().getMap4Boundaries()));
         //maps.get(3).getObstacles().add(new Obstacle(new Vector(400,400)));
         maps.get(3).getEnemies().add(new Enemy(new Vector(200,400)));
     }
@@ -160,9 +153,9 @@ public class GameController implements Initializable, Runnable {
             while(isAlive){
                 Map map = maps.get(currentMap);
                 Platform.runLater(()->{//Runnable
-                    //gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
-                    gc.setFill(Color.GRAY);
-                    gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+                    gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
+                    //gc.setFill(Color.GRAY);
+                    //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
                     avatar.draw(gc);
                     avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
 
@@ -211,15 +204,9 @@ public class GameController implements Initializable, Runnable {
                         e.draw(gc);
                         enemyMovement(e);
                     }
-
-
                 });
-
                 playerMovement();
-                //mapBoundaries();
-
-
-
+                mapBoundaries();
                 //calculateTime();
                 try{
                     Thread.sleep(16);
@@ -282,7 +269,7 @@ public class GameController implements Initializable, Runnable {
         Vector ePos = enemy.pos;
         double limX = bPos.getX() - ePos.getX();
         double limY = bPos.getY() - ePos.getY();
-        if((limX>-20 && limX<50) && limY>-20 && limY<70){
+        if((limX>-bullet.width && limX<enemy.width) && limY>-bullet.heigh && limY<enemy.heigh){
             return true;
         }
         return false;
@@ -320,30 +307,28 @@ public class GameController implements Initializable, Runnable {
         if(avatarFacing){
             limX = aPos.getX() - oPos.getX();
         }else{
-            limX = aPos.getX()-avatar.width - oPos.getX();
+            limX = (aPos.getX()-50) - oPos.getX();
+            //System.out.println("limX = "+limX+" :: limY="+limY);
         }
-        if((limX>-avatar.width && limX<obstacle.width) && limY>-avatar.heigh && limY<obstacle.heigh){
-            //double difSup = Math.abs((aPos.getY()+50) - oPos.getY());
+        if((limX > (-avatar.width) && limX < obstacle.width) && limY> (-avatar.heigh) && limY < (obstacle.heigh)){
             double difSup = Math.abs(limY+avatar.heigh);
-            //double difInf = Math.abs(aPos.getY() - (oPos.getY()+100));
             double difInf = Math.abs(limY-obstacle.heigh);
-            //double difRight = Math.abs(aPos.getX() - (oPos.getX()+100));
-            //double difLeft = Math.abs((aPos.getX()+50) - oPos.getX());
             double difRight = Math.abs(limX-obstacle.width);
             double difLeft = Math.abs(limX+avatar.width);
+            //System.out.println("sup="+difSup+" inf="+difInf+" right="+difRight+" left="+difLeft);
+            if(difSup < 9){
+                aPos.setY(aPos.getY()-5);
+            }
+            if(difInf < 9){
+                aPos.setY(aPos.getY()+5);
+            }
+            if(difLeft < 9){
+                aPos.setX(aPos.getX()-5);
+            }
+            if(difRight < 9){
+                aPos.setX(aPos.getX()+5);
+            }
 
-            if(difSup < 5){
-                aPos.setY(aPos.getY()-3);
-            }
-            if(difInf < 5){
-                aPos.setY(aPos.getY()+3);
-            }
-            if(difLeft < 5){
-                aPos.setX(aPos.getX()-3);
-            }
-            if(difRight < 5){
-                aPos.setX(aPos.getX()+3);
-            }
 
         }
 
@@ -353,7 +338,7 @@ public class GameController implements Initializable, Runnable {
         Vector oPos = obstacle.pos;
         double limX = bPos.getX() - oPos.getX();
         double limY = bPos.getY() - oPos.getY();
-        if((limX>-20 && limX<100) && limY>-20 && limY<100){
+        if((limX>-bullet.width && limX<obstacle.width) && limY>-bullet.heigh && limY<obstacle.heigh){
             return true;
         }
         return false;

@@ -36,11 +36,7 @@ public class Avatar extends Drawing implements Runnable{
     public void draw(GraphicsContext gc) {
         //gc.setFill(Color.AZURE);
         //gc.fillOval(pos.getX(),pos.getY(),50,50);
-        if(isFacingRight){
-            width = 50;
-        }else{
-            width = -50;
-        }
+
         if(!isRunning){
             //gc.drawImage(idle[frame],pos.getX(),pos.getY(),width,50);
             gc.drawImage(idle[frame], isFacingRight?pos.getX():pos.getX(), pos.getY(), isFacingRight?50:-50, 50);
