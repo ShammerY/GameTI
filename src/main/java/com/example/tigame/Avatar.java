@@ -9,8 +9,10 @@ public class Avatar extends Drawing implements Runnable{
     private boolean isFacingRight = true;
     private Image[] idle;
     private Image[] run;
+    private int durability;
     private int frame;
     public Avatar(){
+        durability = 3;
         frame = 0;
         pos.setX(400);
         pos.setY(300);
@@ -28,6 +30,14 @@ public class Avatar extends Drawing implements Runnable{
         }
 
     }
+
+    public int getDurability() {
+        return durability;
+    }
+    public void setDurability(int durability) {
+        this.durability = durability;
+    }
+
     public void setRunning(boolean b){isRunning = b;}
     public void setFrame(int frame){this.frame = frame;}
     public void setIsFacingRight(boolean facing){isFacingRight = facing;}

@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
@@ -31,6 +32,7 @@ public class GameController implements Initializable, Runnable {
     private boolean dIsPressed = false;
     private int currentMap;
     private ArrayList<Map> maps;
+    private GameUI gameUI;
     private Timer timer;
     private long time;
     private boolean avatarFacing = true;
@@ -47,15 +49,33 @@ public class GameController implements Initializable, Runnable {
         canvas.setOnMouseMoved(this::onMouseMoved);
         setMaps();
         setEnemyMovement();
+        gameUI = new GameUI();
         time = 0;
-        avatar = new Avatar();
         magazine = 20;
+        avatar = new Avatar();
         new Thread(avatar).start();
         //timer = new Timer();
         //new Thread(timer).start();
         //new Thread(this).start();
         currentMap = 0;
         draw();
+    }
+    private void setGameUI(){
+        String heart = "file:"+GameApplication.class.getResource("gameUI/Heart1.png").getPath();
+        for(int i=0;i<avatar.getDurability();i++){
+            gc.drawImage(new Image(heart),i*(800/16),0,50,50);
+        }
+        System.out.println("Sale del heart");
+    }
+    private void endGame(){
+        isAlive = !isAlive;
+        if(isAlive && avatar.getDurability()>0){
+            draw();
+        }
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("YOU LOOSE!");
+        alert.setContentText("LOST ALL 3 LIVES");
+        alert.showAndWait();
     }
     private void setMaps(){
         maps = new ArrayList<>();
@@ -156,9 +176,13 @@ public class GameController implements Initializable, Runnable {
                     gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
                     //gc.setFill(Color.GRAY);
                     //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+                    //setGameUI();
                     avatar.draw(gc);
                     avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
-
+                    for(int i=0; i< avatar.getDurability();i++){
+                        Image image = gameUI.getHearts().get(i);
+                        gc.drawImage(image,i*(800/16),0,50,50);
+                    }
                     //Pintar Obstaculos
                     for(Obstacle o:map.getObstacles()){
                         o.draw(gc);
@@ -203,6 +227,7 @@ public class GameController implements Initializable, Runnable {
                         Enemy e = map.getEnemies().get(i);
                         e.draw(gc);
                         enemyMovement(e);
+                        AvatarEnemyCollition(e);
                     }
                 });
                 playerMovement();
@@ -308,30 +333,55 @@ public class GameController implements Initializable, Runnable {
             limX = aPos.getX() - oPos.getX();
         }else{
             limX = (aPos.getX()-50) - oPos.getX();
-            //System.out.println("limX = "+limX+" :: limY="+limY);
         }
         if((limX > (-avatar.width) && limX < obstacle.width) && limY> (-avatar.heigh) && limY < (obstacle.heigh)){
             double difSup = Math.abs(limY+avatar.heigh);
             double difInf = Math.abs(limY-obstacle.heigh);
             double difRight = Math.abs(limX-obstacle.width);
             double difLeft = Math.abs(limX+avatar.width);
-            //System.out.println("sup="+difSup+" inf="+difInf+" right="+difRight+" left="+difLeft);
-            if(difSup < 9){
-                aPos.setY(aPos.getY()-5);
+
+             if(difSup < 9){
+                aPos.setY(aPos.getY()-3);
             }
             if(difInf < 9){
-                aPos.setY(aPos.getY()+5);
+                aPos.setY(aPos.getY()+3);
             }
             if(difLeft < 9){
-                aPos.setX(aPos.getX()-5);
+                aPos.setX(aPos.getX()-3);
             }
             if(difRight < 9){
-                aPos.setX(aPos.getX()+5);
+                aPos.setX(aPos.getX()+3);
             }
 
-
+        }
+    }
+    private void AvatarEnemyCollition(Enemy enemy){
+        Vector aPos = avatar.pos;
+        Vector ePos = enemy.pos;
+        double limX = 0;
+        double limY = aPos.getY() - ePos.getY();
+        if(avatarFacing){
+            limX = aPos.getX() - ePos.getX();
+        }else{
+            limX = (aPos.getX()-avatar.width) - ePos.getX();
+        }
+        if((limX > (-((double)avatar.width/2)) && limX < ((double)enemy.width/2)) && limY> (-((double)avatar.heigh/2)) && limY < ((double)enemy.heigh/2)){
+            double difSup = Math.abs(limY+avatar.heigh);
+            double difInf = Math.abs(limY-enemy.heigh);
+            double difRight = Math.abs(limX-enemy.width);
+            double difLeft = Math.abs(limX+avatar.width);
+            avatar.pos.setX(canvas.getWidth()/2);
+            avatar.pos.setY(canvas.getHeight()/2);
+            avatarDamaged();
         }
 
+    }
+    private void avatarDamaged(){
+        avatar.setDurability(avatar.getDurability()-1);
+
+        if(avatar.getDurability()<=0){
+            endGame();
+        }
     }
     private boolean bulletObstacleCollition(Bullet bullet, Obstacle obstacle){
         Vector bPos = bullet.pos;
@@ -360,10 +410,7 @@ public class GameController implements Initializable, Runnable {
             dIsPressed = true;
         }
         if(event.getCode().equals(KeyCode.P)){
-            isAlive = !isAlive;
-            if(isAlive){
-                draw();
-            }
+            endGame();
         }
         if(event.getCode().equals(KeyCode.R)){
             magazine = 20;

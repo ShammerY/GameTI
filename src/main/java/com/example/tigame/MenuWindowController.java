@@ -46,7 +46,7 @@ public class MenuWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Image image = new Image("file:"+GameApplication.class.getResource("backgrounds/The_Midnight_Background.png").getPath());
+        Image image = new Image("file:"+GameApplication.class.getResource("backgrounds/Space_Background.png").getPath());
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
         gc.drawImage(image,0,0,canvas.getWidth(),canvas.getHeight());
