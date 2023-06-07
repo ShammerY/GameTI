@@ -44,6 +44,7 @@ public class GameController implements Initializable, Runnable {
     private Timer timer;
     private boolean avatarFacing = true;
     private int magazine;
+    private long lastSec;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -59,6 +60,7 @@ public class GameController implements Initializable, Runnable {
         gameUI = new GameUI();
         //time = 0;
         magazine = 20;
+        lastSec = 0;
         setAvatar();
         timer = new Timer();
         new Thread(timer).start();
@@ -84,13 +86,6 @@ public class GameController implements Initializable, Runnable {
         bgSquare.setDisable(true);
         bgSquare.setVisible(false);
     }
-    private void setGameUI(){
-        String heart = "file:"+GameApplication.class.getResource("gameUI/Heart1.png").getPath();
-        for(int i=0;i<avatar.getDurability();i++){
-            gc.drawImage(new Image(heart),i*(800/16),0,50,50);
-        }
-        System.out.println("Sale del heart");
-    }
     private void endGame(){
         isAlive = !isAlive;
         if(isAlive && avatar.getDurability()>0){
@@ -102,6 +97,7 @@ public class GameController implements Initializable, Runnable {
             bgSquare.setVisible(true);
             gameOverLB.setText("GAME OVER");
             returnBT.setText("Return");
+            timer.stop();
             /*
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("YOU LOOSE!");
@@ -115,7 +111,6 @@ public class GameController implements Initializable, Runnable {
         //________________Map 1______________________
         int[] connections0 = {-1,1,-1,-1};
         maps.add(new Map(0, new Boundaries().getMap1Boundaries(), connections0));
-        maps.get(0).getEnemies().add(new Enemy(new Vector(100,100)));
         //________________Map 2______________________
         int[] connections1 = {0,3,2,5};
         maps.add(new Map(1, new Boundaries().getMap2Boundaries(),connections1));
@@ -197,7 +192,7 @@ public class GameController implements Initializable, Runnable {
         diff.setMag(4);
 
         maps.get(currentMap).getBullets().add(
-                new Bullet(new Vector(avatarPosX, avatarPosY), diff)
+                new Bullet(new Vector(avatarPosX, avatarPosY), diff,false)
         );
         magazine--;
         ammoLB.setText(""+magazine);
@@ -207,9 +202,11 @@ public class GameController implements Initializable, Runnable {
             while(isAlive){
                 Map map = maps.get(currentMap);
                 Platform.runLater(()->{//Runnable
-                    //gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
-                    gc.setFill(Color.GRAY);
-                    gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+                    String url = "file:"+GameApplication.class.getResource("backgrounds/bgp.png").getPath();
+                    Image image= new Image(url);
+                    gc.drawImage(image,0,0,canvas.getWidth(),canvas.getHeight());
+                    //gc.setFill(Color.GRAY);
+                    //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
                     //setGameUI();
                     avatar.draw(gc);
                     avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
@@ -237,8 +234,12 @@ public class GameController implements Initializable, Runnable {
                         if(isOutside(b.pos.getX(),b.pos.getY())){
                             map.getBullets().remove(i);
                         }else{
-                            //Colision de balas con obstaculos
+
                             try{
+                                //Colision de Balas enemigas con jugador
+                                bulletAvatarCollition(b);
+
+                                //Colision de balas con obstaculos
                                 for(int j=0;j<map.getObstacles().size();j++){
                                     Obstacle o = map.getObstacles().get(j);
                                     if(bulletObstacleCollition(b,o)){
@@ -249,45 +250,62 @@ public class GameController implements Initializable, Runnable {
                                         }
                                     }
                                 }
-                            }catch(IndexOutOfBoundsException ex){}
-                            //Colision de Balas con Enemigos
-                            for(int j=0;j<map.getEnemies().size();j++){
-                                Enemy e = map.getEnemies().get(j);
-                                if(bulletEnemyCollition(b,e)){
-                                    e.setDurability(e.getDurability()-1);
-                                    map.getBullets().remove(i);
-                                    if(e.getDurability()<=0){
-                                        map.getEnemies().remove(j);
+                                //Colision Balas con Enemigos
+                                for(int j=0;j<map.getEnemies().size();j++){
+                                    Enemy e = map.getEnemies().get(j);
+                                    if(bulletEnemyCollition(b,e)){
+                                        e.setDurability(e.getDurability()-1);
+                                        map.getBullets().remove(i);
+                                        if(e.getDurability()<=0){
+                                            map.getEnemies().remove(j);
+                                        }
                                     }
                                 }
-                            }
-
+                            }catch(IndexOutOfBoundsException ex){}
+                            //Colision de Balas con Enemigos
                         }
                     }
-
                     //Pintar Enemigos
                     for( int i=0;i<map.getEnemies().size();i++){
                         Enemy e = map.getEnemies().get(i);
                         e.draw(gc);
                         //enemyBounceMovement(e);
-                        enemyIntervalMovement(e);
+                        enemyMovement(e);
                         AvatarEnemyCollition(e);
                     }
                 });
                 playerMovement();
-                //mapBoundaries();
                 //calculateTime();
                 AvatarCollideWithMapBoundary();
+                lastSec = timer.getInterval();
 
                 try{
                     Thread.sleep(16);
                 }catch(InterruptedException ex){
                     ex.printStackTrace();
-                    System.out.println("INTERRUPTED EXCEPTION");
                 }
             }
         });
         thread.start();
+    }
+
+    private void bulletAvatarCollition(Bullet bullet) {
+        if(bullet.isEnemyBullet()){
+            Vector aPos = avatar.pos;
+            Vector ePos = bullet.pos;
+            double limX = 0;
+            double limY = aPos.getY() - ePos.getY();
+            if(avatarFacing){
+                limX = aPos.getX() - ePos.getX();
+            }else{
+                limX = (aPos.getX()-avatar.width) - ePos.getX();
+            }
+            if((limX > (-((double)avatar.width/2)) && limX < ((double)bullet.width)) && limY> (-((double)avatar.heigh/2)) && limY < ((double)bullet.heigh)){
+                avatar.pos.setX(canvas.getWidth()/2);
+                avatar.pos.setY(canvas.getHeight()/2);
+                avatarDamaged();
+            }
+        }
     }
 
     private void enemyObstacleCollition(Obstacle obstacle,Enemy enemy) {
@@ -306,31 +324,76 @@ public class GameController implements Initializable, Runnable {
             double difRight = Math.abs(limX-obstacle.width);
             double difLeft = Math.abs(limX+avatar.width);
 
-            if(difSup < 9){
-                ePos.setY(ePos.getY()-3);
+            if(difSup < 6){
+                ePos.setY(ePos.getY()-5);
             }
-            if(difInf < 9){
-                ePos.setY(ePos.getY()+3);
+            if(difInf < 6){
+                ePos.setY(ePos.getY()+5);
             }
-            if(difLeft < 9){
-                ePos.setX(ePos.getX()-3);
+            if(difLeft < 6){
+                ePos.setX(ePos.getX()-5);
             }
-            if(difRight < 9){
-                ePos.setX(ePos.getX()+3);
+            if(difRight < 6){
+                ePos.setX(ePos.getX()+5);
             }
 
         }
     }
+    private void enemyMovement(Enemy e) {
+        switch(e.getId()){
+            case 1:
+                if(timer.getInterval()==1){
+                    e.setRandomDirection();
+                }else{
+                    e.pos.setX(e.pos.getX()+e.getDirection().getX());
+                    e.pos.setY(e.pos.getY()+e.getDirection().getY());
+                }
+                mapBoundaries(e);
+                break;
+            case 2:
+                break;
+            case 3:
 
-    private void enemyIntervalMovement(Enemy e) {
-        if(timer.getInterval()==1){
-            e.setDirection();
-        }else{
-            e.pos.setX(e.pos.getX()+e.getDirection().getX());
-            e.pos.setY(e.pos.getY()+e.getDirection().getY());
+                if(timer.getInterval()==3 && e.shot()){
+                    double avatarPosX = 0;
+                    double avatarPosY = 0;
+                    if(avatarFacing){
+                        avatarPosX = avatar.pos.getX()+25;
+                        avatarPosY = avatar.pos.getY()+25;
+                    }else{
+                        avatarPosX = avatar.pos.getX()-25;
+                        avatarPosY = avatar.pos.getY()+25;
+                    }
+                    //double diffX = e.getX() - avatarPosX;
+                    //double diffY = e.getY() - avatarPosY;
+                    double diffX = avatarPosX - e.pos.getX()+((double)e.width/2);
+                    double diffY = avatarPosY - e.pos.getY()+((double)e.heigh/2);
+                    Vector diff = new Vector(diffX,diffY);
+                    diff.normalize();
+                    diff.setMag(4);
+                    maps.get(currentMap).getBullets().add(
+                            new Bullet(new Vector(e.pos.getX()+((double)e.width/2), e.pos.getY()+((double)e.heigh/2)), diff,true)
+                    );
+                    e.setShot(false);
+                }
+                break;
+        }
+
+    }
+    private void mapBoundaries(Enemy e) {
+        if(e.pos.getX()<=0){
+            e.pos.setX(10);
+        }
+        if(e.pos.getX()>= canvas.getWidth()-e.width){
+            e.pos.setX(canvas.getWidth()-e.width-5);
+        }
+        if(e.pos.getY()<=0){
+            e.pos.setY(5);
+        }
+        if(avatar.pos.getY()>canvas.getHeight()-e.heigh){
+            e.pos.setY(canvas.getHeight()-e.heigh-5);
         }
     }
-
     private void drawGameUI() {
         for(int i=0; i< avatar.getDurability();i++){
             Image image = gameUI.getHearts().get(i);
@@ -339,36 +402,6 @@ public class GameController implements Initializable, Runnable {
         Image ammoImage = gameUI.getAmmoUI();
         gc.drawImage(ammoImage,(800/16)*14,(600/12)*10,100,100);
 
-    }
-
-    private void mapBoundaries() {
-        double limX = 0;
-        if(avatarFacing){
-            limX = avatar.pos.getX();
-        }else{
-            limX = avatar.pos.getX()-50;
-        }
-
-        if(limX<0){
-            avatar.pos.setX(canvas.getWidth()-50);
-            currentMap = ((currentMap+1)%4);
-        }
-        if(limX > canvas.getWidth()-20){
-            avatar.pos.setX(50);
-            if(currentMap==0){
-                currentMap=3;
-            }else{
-                currentMap = ((currentMap-1)%4);
-            }
-
-
-        }
-        if(avatar.pos.getY()<150){
-            avatar.pos.setY(150);
-        }
-        if(avatar.pos.getY()>canvas.getHeight()-50){
-            avatar.pos.setY(canvas.getHeight()-50);
-        }
     }
     private void AvatarCollideWithMapBoundary() {
         double aposX = 0;
@@ -397,7 +430,6 @@ public class GameController implements Initializable, Runnable {
             currentMap = maps.get(currentMap).getConnections()[3];
         }
     }
-
     private void playerMovement() {
         if(wIsPressed){
             avatar.pos.setY(avatar.pos.getY()-3);
@@ -412,8 +444,10 @@ public class GameController implements Initializable, Runnable {
             avatar.pos.setX(avatar.pos.getX()+3);
         }
     }
-
     private boolean bulletEnemyCollition(Bullet bullet, Enemy enemy) {
+        if(bullet.isEnemyBullet()){
+            return false;
+        }
         Vector bPos = bullet.pos;
         Vector ePos = enemy.pos;
         double limX = bPos.getX() - ePos.getX();
@@ -502,6 +536,11 @@ public class GameController implements Initializable, Runnable {
     }
     private void avatarDamaged(){
         avatar.setDurability(avatar.getDurability()-1);
+        if(avatar.getDurability()>0){
+            currentMap = 0;
+            avatar.pos.setX(canvas.getWidth()/2-((double)avatar.width/2));
+            avatar.pos.setY(canvas.getHeight()/2-((double)avatar.heigh/2));
+        }
     }
     private boolean bulletObstacleCollition(Bullet bullet, Obstacle obstacle){
         Vector bPos = bullet.pos;
