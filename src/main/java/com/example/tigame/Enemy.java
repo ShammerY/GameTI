@@ -9,6 +9,7 @@ public class Enemy extends Drawing implements Runnable{
     private boolean movingRight = true;
     private int frame;
     private int durability;
+    private Vector direction;
     public Enemy(Vector pos){
         durability = 10;
         this.pos = pos;
@@ -20,8 +21,19 @@ public class Enemy extends Drawing implements Runnable{
             String uri = "file:"+GameApplication.class.getResource("ZombieWalk/zombieWalk"+(i+1)+".png").getPath();
             image[i] = new Image(uri);
         }
+        setDirection();
+    }
+    public void setDirection(){
+        double x = Math.floor(Math.random()*800+1);
+        double y = Math.floor(Math.random()*600+1);
+        double diffX = x - pos.getX();
+        double diffY = y - pos.getY();
+        direction = new Vector(diffX,diffY);
+        direction.normalize();
+        direction.setMag(2);
     }
 
+    public Vector getDirection(){return direction;}
     public int getDurability() {
         return durability;
     }
@@ -47,7 +59,7 @@ public class Enemy extends Drawing implements Runnable{
 
     @Override
     public void draw(GraphicsContext gc) {
-        gc.drawImage(image[frame],pos.getX(),pos.getY(),50,70);
+        gc.drawImage(image[frame],pos.getX(),pos.getY(),this.width,this.heigh);
     }
 
     @Override

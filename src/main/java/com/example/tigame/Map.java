@@ -19,6 +19,7 @@ public class Map {
         this.id = id;
         bullets = new ArrayList<>();
         setObstacles(boundaries);
+        setEnemies();
     }
     public void setObstacles(int[][] boundaries){
         Image borderImage = new Image("file:"+GameApplication.class.getResource("Border/Bricks"+(id+1)+".png").getPath());
@@ -31,6 +32,16 @@ public class Map {
                     obstacles.add(new Obstacle(new Vector((double)j*(800/16),(double)i*(600/12)),true,borderImage));
                 }
             }
+        }
+    }
+    private void setEnemies(){
+        int cant = (int)Math.floor(Math.random()*15);
+        int x=0;
+        int y=0;
+        for(int i=0;i<cant;i++){
+            x =(int)Math.floor(Math.random()*16);
+            y =(int)Math.floor(Math.random()*12);
+            enemies.add(new Enemy(new Vector(x*(800/16),y*(600/12))));
         }
     }
 

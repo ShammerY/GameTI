@@ -42,7 +42,6 @@ public class GameController implements Initializable, Runnable {
     private ArrayList<Map> maps;
     private GameUI gameUI;
     private Timer timer;
-    private long time;
     private boolean avatarFacing = true;
     private int magazine;
     @Override
@@ -58,15 +57,22 @@ public class GameController implements Initializable, Runnable {
         setMaps();
         setEnemyMovement();
         gameUI = new GameUI();
-        time = 0;
+        //time = 0;
         magazine = 20;
-        avatar = new Avatar(CharacterSelection.getInstance().getCharacterID());
-        new Thread(avatar).start();
-        //timer = new Timer();
-        //new Thread(timer).start();
+        setAvatar();
+        timer = new Timer();
+        new Thread(timer).start();
         //new Thread(this).start();
         currentMap = 0;
         draw();
+    }
+    private void setAvatar(){
+        int id = CharacterSelection.getInstance().getCharacterID();
+        if(id!=1 && id!=2 && id!=3){
+            id=1;
+        }
+        avatar = new Avatar(id);
+        new Thread(avatar).start();
     }
     private void setGameOverMenu(){
         gameOverLB.setTextFill(Color.RED);
@@ -96,10 +102,12 @@ public class GameController implements Initializable, Runnable {
             bgSquare.setVisible(true);
             gameOverLB.setText("GAME OVER");
             returnBT.setText("Return");
+            /*
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("YOU LOOSE!");
             alert.setContentText("LOST ALL 3 LIVES");
             alert.showAndWait();
+             */
         }
     }
     private void setMaps() {
@@ -107,6 +115,7 @@ public class GameController implements Initializable, Runnable {
         //________________Map 1______________________
         int[] connections0 = {-1,1,-1,-1};
         maps.add(new Map(0, new Boundaries().getMap1Boundaries(), connections0));
+        maps.get(0).getEnemies().add(new Enemy(new Vector(100,100)));
         //________________Map 2______________________
         int[] connections1 = {0,3,2,5};
         maps.add(new Map(1, new Boundaries().getMap2Boundaries(),connections1));
@@ -209,9 +218,15 @@ public class GameController implements Initializable, Runnable {
                         endGame();
                     }
                     //Pintar Obstaculos
-                    for(Obstacle o:map.getObstacles()){
+                    for(int i=0;i<map.getObstacles().size();i++){
+                        Obstacle o = map.getObstacles().get(i);
                         o.draw(gc);
                         AvatarObstacleCollition(o);
+                        for(int j=0;j<map.getEnemies().size();j++){
+                            Enemy e = map.getEnemies().get(j);
+                            enemyObstacleCollition(o,e);
+
+                        }
                     }
                     drawGameUI();
                     //Pintar Balas
@@ -254,7 +269,8 @@ public class GameController implements Initializable, Runnable {
                     for( int i=0;i<map.getEnemies().size();i++){
                         Enemy e = map.getEnemies().get(i);
                         e.draw(gc);
-                        enemyMovement(e);
+                        //enemyBounceMovement(e);
+                        enemyIntervalMovement(e);
                         AvatarEnemyCollition(e);
                     }
                 });
@@ -272,6 +288,47 @@ public class GameController implements Initializable, Runnable {
             }
         });
         thread.start();
+    }
+
+    private void enemyObstacleCollition(Obstacle obstacle,Enemy enemy) {
+        Vector ePos = enemy.pos;
+        Vector oPos = obstacle.pos;
+        double limX = 0;
+        double limY = ePos.getY() - oPos.getY();
+        if(avatarFacing){
+            limX = ePos.getX() - oPos.getX();
+        }else{
+            limX = (ePos.getX()-50) - oPos.getX();
+        }
+        if((limX > (-enemy.width) && limX < obstacle.width) && limY> (-enemy.heigh) && limY < (obstacle.heigh)){
+            double difSup = Math.abs(limY+avatar.heigh);
+            double difInf = Math.abs(limY-obstacle.heigh);
+            double difRight = Math.abs(limX-obstacle.width);
+            double difLeft = Math.abs(limX+avatar.width);
+
+            if(difSup < 9){
+                ePos.setY(ePos.getY()-3);
+            }
+            if(difInf < 9){
+                ePos.setY(ePos.getY()+3);
+            }
+            if(difLeft < 9){
+                ePos.setX(ePos.getX()-3);
+            }
+            if(difRight < 9){
+                ePos.setX(ePos.getX()+3);
+            }
+
+        }
+    }
+
+    private void enemyIntervalMovement(Enemy e) {
+        if(timer.getInterval()==1){
+            e.setDirection();
+        }else{
+            e.pos.setX(e.pos.getX()+e.getDirection().getX());
+            e.pos.setY(e.pos.getY()+e.getDirection().getY());
+        }
     }
 
     private void drawGameUI() {
@@ -366,7 +423,7 @@ public class GameController implements Initializable, Runnable {
         }
         return false;
     }
-    private void enemyMovement(Enemy enemy){
+    private void enemyBounceMovement(Enemy enemy){
         if(enemy.isMovingUp()){
             enemy.pos.setY(enemy.pos.getY()-2);
         }else{
@@ -377,7 +434,7 @@ public class GameController implements Initializable, Runnable {
         }else{
             enemy.pos.setX(enemy.pos.getX()-2);
         }
-        if(enemy.pos.getY()<=150){
+        if(enemy.pos.getY()<=0){
             enemy.setMovingUp(false);
         }
         if(enemy.pos.getY()+70>=canvas.getHeight()){
@@ -497,15 +554,7 @@ public class GameController implements Initializable, Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            time++;
-            System.out.println(time);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+
     }
     @FXML
     public void returnToMenu(MouseEvent mouseEvent) {
