@@ -15,6 +15,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class MenuWindowController implements Initializable {
+    @FXML
+    public Label exitBT;
     private GraphicsContext gc;
     @FXML
     public Canvas canvas;
@@ -77,5 +79,17 @@ public class MenuWindowController implements Initializable {
     @FXML
     public void mouseExitedScores(MouseEvent mouseEvent) {
         scoresBT.setTextFill(Color.PURPLE);
+    }
+    @FXML
+    public void exitProgram(MouseEvent mouseEvent) {
+        System.exit(0);
+    }
+    @FXML
+    public void mouseExitedExit(MouseEvent mouseEvent) {
+        exitBT.setTextFill(Color.PURPLE);
+    }
+    @FXML
+    public void mouseEnteredExit(MouseEvent mouseEvent) {
+        exitBT.setTextFill(Color.WHITE);
     }
 }

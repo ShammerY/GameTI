@@ -12,6 +12,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.URL;
@@ -20,7 +22,11 @@ import java.util.ResourceBundle;
 
 public class GameController implements Initializable, Runnable {
     @FXML
-    public Label timeLB;
+    public Label gameOverLB;
+    @FXML
+    public Label returnBT;
+    @FXML
+    public Rectangle bgSquare;
     @FXML
     private Canvas canvas;
     private boolean isAlive = true;
@@ -42,11 +48,11 @@ public class GameController implements Initializable, Runnable {
 
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
-
         canvas.setOnKeyPressed(this::onKeyPressed);
         canvas.setOnKeyReleased(this::onKeyReleased);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseMoved(this::onMouseMoved);
+        setGameOverMenu();
         setMaps();
         setEnemyMovement();
         gameUI = new GameUI();
@@ -60,6 +66,16 @@ public class GameController implements Initializable, Runnable {
         currentMap = 0;
         draw();
     }
+    private void setGameOverMenu(){
+        gameOverLB.setTextFill(Color.RED);
+        returnBT.setTextFill(Color.PURPLE);
+        gameOverLB.setText("");
+        returnBT.setText("");
+        gameOverLB.setDisable(true);
+        returnBT.setDisable(true);
+        bgSquare.setDisable(true);
+        bgSquare.setVisible(false);
+    }
     private void setGameUI(){
         String heart = "file:"+GameApplication.class.getResource("gameUI/Heart1.png").getPath();
         for(int i=0;i<avatar.getDurability();i++){
@@ -71,34 +87,39 @@ public class GameController implements Initializable, Runnable {
         isAlive = !isAlive;
         if(isAlive && avatar.getDurability()>0){
             draw();
+        }else if(avatar.getDurability()<=0){
+            gameOverLB.setDisable(false);
+            returnBT.setDisable(false);
+            bgSquare.setDisable(false);
+            bgSquare.setVisible(true);
+            gameOverLB.setText("GAME OVER");
+            returnBT.setText("Return");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("YOU LOOSE!");
+            alert.setContentText("LOST ALL 3 LIVES");
+            alert.showAndWait();
         }
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("YOU LOOSE!");
-        alert.setContentText("LOST ALL 3 LIVES");
-        alert.showAndWait();
     }
-    private void setMaps(){
+    private void setMaps() {
         maps = new ArrayList<>();
         //________________Map 1______________________
-        String uri = "file:"+GameApplication.class.getResource("forestBG/game_background_1.png").getPath();
-        maps.add(new Map(0,new Image(uri),new Boundaries().getMap1Boundaries()));
+        int[] connections0 = {-1,1,-1,-1};
+        maps.add(new Map(0, new Boundaries().getMap1Boundaries(), connections0));
         //________________Map 2______________________
-        uri = "file:"+GameApplication.class.getResource("forestBG/game_background_2.png").getPath();
-        maps.add(new Map(1,new Image(uri),new Boundaries().getMap2Boundaries()));
-        maps.get(1).getEnemies().add(new Enemy(new Vector(100,230)));
-        maps.get(1).getEnemies().add(new Enemy(new Vector(350,350)));
-        //maps.get(1).getObstacles().add(new Obstacle(new Vector(100,300)));
-        //maps.get(1).getObstacles().add(new Obstacle(new Vector(300,150)));
+        int[] connections1 = {0,3,2,5};
+        maps.add(new Map(1, new Boundaries().getMap2Boundaries(),connections1));
         //________________Map 3______________________
-        uri = "file:"+GameApplication.class.getResource("forestBG/game_background_3.png").getPath();
-        maps.add(new Map(2,new Image(uri),new Boundaries().getMap3Boundaries()));
-        maps.get(2).getEnemies().add(new Enemy(new Vector(350,350)));
-        maps.get(2).getEnemies().add(new Enemy( new Vector(300,300)));
+        int[] connections2 = {-1,-1,-1,1};
+        maps.add(new Map(2, new Boundaries().getMap3Boundaries(),connections2));
         //________________Map 4______________________
-        uri = "file:"+GameApplication.class.getResource("forestBG/game_background_4.png").getPath();
-        maps.add(new Map(3,new Image(uri),new Boundaries().getMap4Boundaries()));
-        //maps.get(3).getObstacles().add(new Obstacle(new Vector(400,400)));
-        maps.get(3).getEnemies().add(new Enemy(new Vector(200,400)));
+        int[] connections3 = {1,-1,-1,4};
+        maps.add(new Map(3, new Boundaries().getMap4Boundaries(),connections3));
+        //________________Map 5______________________
+        int[] connections4 = {5,-1,3,-1};
+        maps.add(new Map(4, new Boundaries().getMap5Boundaries(),connections4));
+        //________________Map 6______________________
+        int[] connections5 = {-2,4,1,-1};
+        maps.add(new Map(5, new Boundaries().getMap6Boundaries(),connections5));
     }
     private void setEnemyMovement(){
         for(Map map:maps){
@@ -173,20 +194,24 @@ public class GameController implements Initializable, Runnable {
             while(isAlive){
                 Map map = maps.get(currentMap);
                 Platform.runLater(()->{//Runnable
-                    gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
-                    //gc.setFill(Color.GRAY);
-                    //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+                    //gc.drawImage(map.getImage(),0,0,canvas.getWidth(),canvas.getHeight());
+                    gc.setFill(Color.GRAY);
+                    gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
                     //setGameUI();
                     avatar.draw(gc);
                     avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
-                    for(int i=0; i< avatar.getDurability();i++){
-                        Image image = gameUI.getHearts().get(i);
-                        gc.drawImage(image,i*(800/16),0,50,50);
+
+                    if(avatar.getDurability()<=0){
+                        endGame();
                     }
                     //Pintar Obstaculos
                     for(Obstacle o:map.getObstacles()){
                         o.draw(gc);
                         AvatarObstacleCollition(o);
+                    }
+                    for(int i=0; i< avatar.getDurability();i++){
+                        Image image = gameUI.getHearts().get(i);
+                        gc.drawImage(image,i*(800/16),0,50,50);
                     }
                     //Pintar Balas
 
@@ -231,8 +256,10 @@ public class GameController implements Initializable, Runnable {
                     }
                 });
                 playerMovement();
-                mapBoundaries();
+                //mapBoundaries();
                 //calculateTime();
+                AvatarCollideWithMapBoundary();
+
                 try{
                     Thread.sleep(16);
                 }catch(InterruptedException ex){
@@ -271,6 +298,33 @@ public class GameController implements Initializable, Runnable {
         }
         if(avatar.pos.getY()>canvas.getHeight()-50){
             avatar.pos.setY(canvas.getHeight()-50);
+        }
+    }
+    private void AvatarCollideWithMapBoundary() {
+        double aposX = 0;
+        if(avatar.isFacingRight()){
+            aposX = avatar.pos.getX();
+        }else{
+            aposX = avatar.pos.getX()-avatar.width;
+        }
+        double difSup = Math.abs(0-avatar.pos.getY());
+        double difInf = Math.abs(canvas.getHeight()-(avatar.pos.getY()+avatar.heigh));
+        double difRight = Math.abs(canvas.getWidth() - (aposX+avatar.width));
+        double difLeft = Math.abs(0 - aposX);
+        if(difSup<5){
+            avatar.pos.setY(canvas.getHeight()-avatar.heigh-10);
+            currentMap = maps.get(currentMap).getConnections()[0];
+        } else if(difInf<5){
+            avatar.pos.setY(10);
+            currentMap = maps.get(currentMap).getConnections()[1];
+        } else if(difRight<5){
+            avatar.pos.setX(25+avatar.width);
+            //avatar.setIsFacingRight(true);
+            currentMap = maps.get(currentMap).getConnections()[2];
+        } else if(difLeft<5){
+            avatar.pos.setX(canvas.getWidth()-(avatar.width+25));
+            //avatar.setIsFacingRight(false);
+            currentMap = maps.get(currentMap).getConnections()[3];
         }
     }
 
@@ -378,10 +432,6 @@ public class GameController implements Initializable, Runnable {
     }
     private void avatarDamaged(){
         avatar.setDurability(avatar.getDurability()-1);
-
-        if(avatar.getDurability()<=0){
-            endGame();
-        }
     }
     private boolean bulletObstacleCollition(Bullet bullet, Obstacle obstacle){
         Vector bPos = bullet.pos;
@@ -435,7 +485,6 @@ public class GameController implements Initializable, Runnable {
     public void run() {
         while (true) {
             time++;
-            timeLB.setText(""+time);
             System.out.println(time);
             try {
                 Thread.sleep(1000);
@@ -443,5 +492,19 @@ public class GameController implements Initializable, Runnable {
                 throw new RuntimeException(e);
             }
         }
+    }
+    @FXML
+    public void returnToMenu(MouseEvent mouseEvent) {
+        GameApplication.openWindow("menuWindow.fxml");
+        Stage stage = (Stage) returnBT.getScene().getWindow();
+        stage.close();
+    }
+    @FXML
+    public void returnMouseEnter(MouseEvent mouseEvent) {
+        returnBT.setTextFill(Color.WHITE);
+    }
+    @FXML
+    public void returnMouseExit(MouseEvent mouseEvent) {
+        returnBT.setTextFill(Color.PURPLE);
     }
 }

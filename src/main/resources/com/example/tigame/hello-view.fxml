@@ -3,12 +3,19 @@
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.tigame.GameController">
    <children>
       <Canvas fx:id="canvas" height="600.0" width="800.0" />
-      <Label fx:id="timeLB" contentDisplay="RIGHT" layoutX="643.0" layoutY="14.0" prefHeight="68.0" prefWidth="146.0" textFill="#53c1c3">
+      <Rectangle fx:id="bgSquare" arcHeight="5.0" arcWidth="5.0" fill="#343c43" height="225.0" layoutX="206.0" layoutY="133.0" stroke="BLACK" strokeType="INSIDE" width="389.0" />
+      <Label fx:id="returnBT" layoutX="345.0" layoutY="300.0" onMouseClicked="#returnToMenu" onMouseEntered="#returnMouseEnter" onMouseExited="#returnMouseExit" text="RETURN" textFill="#cf4a4a">
+         <font>
+            <Font size="30.0" />
+         </font>
+      </Label>
+      <Label fx:id="gameOverLB" alignment="CENTER" contentDisplay="RIGHT" layoutX="194.0" layoutY="152.0" prefHeight="68.0" prefWidth="412.0" text="GAME OVER" textFill="#dd4141">
          <font>
             <Font name="Bodoni MT" size="55.0" />
          </font>

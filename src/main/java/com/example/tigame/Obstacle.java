@@ -6,13 +6,14 @@ import javafx.scene.paint.Color;
 
 public class Obstacle extends Drawing{
     private Image pic;
+    private boolean destructible;
     private int durability;
-    public Obstacle(Vector pos){
+    public Obstacle(Vector pos, boolean destructible,Image image){
+        this.destructible = destructible;
         this.width = 50;
         this.heigh = 50;
         this.pos = pos;
-        String uri = "file:"+GameApplication.class.getResource("obstacles/barrel1.png").getPath();
-        pic = new Image(uri);
+        this.pic = image;
         durability = 5;
     }
     public int getWidth(){
@@ -27,6 +28,10 @@ public class Obstacle extends Drawing{
         //gc.fillRect(pos.getX(),pos.getY(),100,100);
         gc.drawImage(pic,pos.getX(),pos.getY(),50,50);
     }
-    public void setDurability(int n){this.durability = n;}
+    public void setDurability(int n){
+        if(destructible){
+            this.durability = n;
+        }
+    }
     public int getDurability(){return this.durability;}
 }

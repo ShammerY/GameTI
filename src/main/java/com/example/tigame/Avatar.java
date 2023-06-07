@@ -18,14 +18,14 @@ public class Avatar extends Drawing implements Runnable{
         pos.setY(300);
         this.width = 50;
         this.heigh = 50;
-        idle = new Image[10];
-        for(int i=0;i<10;i++){
-            String uri = "file:"+GameApplication.class.getResource("rainbowMan_idle/rainbowMan-idle"+(i+1)+".png").getPath();
+        idle = new Image[5];
+        for(int i=0;i<5;i++){
+            String uri = "file:"+GameApplication.class.getResource("Black/Quieto/Gunner_Black_Idle_"+(i+1)+".png").getPath();
             idle[i] = new Image(uri);
         }
-        run = new Image[8];
-        for(int i=0;i<8;i++){
-            String uri = "file:"+GameApplication.class.getResource("rainbowMan_run/rainbowMan"+(i+1)+"_run.png").getPath();
+        run = new Image[6];
+        for(int i=0;i<6;i++){
+            String uri = "file:"+GameApplication.class.getResource("Black/Run/Gunner_Black_Run_"+(i+1)+".png").getPath();
             run[i] = new Image(uri);
         }
 
@@ -48,11 +48,15 @@ public class Avatar extends Drawing implements Runnable{
         //gc.fillOval(pos.getX(),pos.getY(),50,50);
 
         if(!isRunning){
-            //gc.drawImage(idle[frame],pos.getX(),pos.getY(),width,50);
+            try{
+                gc.drawImage(idle[frame], isFacingRight?pos.getX():pos.getX(), pos.getY(), isFacingRight?50:-50, 50);
+
+            }catch(IndexOutOfBoundsException ex){
+                frame = 0;
+            }
             gc.drawImage(idle[frame], isFacingRight?pos.getX():pos.getX(), pos.getY(), isFacingRight?50:-50, 50);
         }else{
             try{
-                //gc.drawImage(run[frame],pos.getX(),pos.getY(),width,50);
                 gc.drawImage(run[frame], isFacingRight?pos.getX():pos.getX(), pos.getY(), isFacingRight?50:-50, 50);
             }catch(IndexOutOfBoundsException ex){
                 frame = 0;
@@ -66,9 +70,9 @@ public class Avatar extends Drawing implements Runnable{
     public void run() {
         while (true) {
             if(isRunning){
-                frame = (frame + 1) % 8;
+                frame = (frame + 1) % 6;
             }else{
-                frame = (frame + 1) % 10;
+                frame = (frame + 1) % 5;
             }
 
             try {
