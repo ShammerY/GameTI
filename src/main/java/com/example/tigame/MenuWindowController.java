@@ -6,6 +6,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -17,6 +18,8 @@ import java.util.ResourceBundle;
 public class MenuWindowController implements Initializable {
     @FXML
     public Label exitBT;
+    @FXML
+    public ImageView characterIV;
     private GraphicsContext gc;
     @FXML
     public Canvas canvas;
@@ -31,7 +34,9 @@ public class MenuWindowController implements Initializable {
 
     @FXML
     void displayCharacters(MouseEvent event) {
-
+        GameApplication.openWindow("CharacterMenu.fxml");
+        Stage stage = (Stage) exitBT.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
@@ -55,6 +60,23 @@ public class MenuWindowController implements Initializable {
         playBT.setTextFill(Color.PURPLE);
         charactersBT.setTextFill(Color.PURPLE);
         scoresBT.setTextFill(Color.PURPLE);
+        setCharacterVisual();
+    }
+    private void setCharacterVisual(){
+        int id = CharacterSelection.getInstance().getCharacterID();
+        if(id!=1&&id!=2&&id!=3){
+            id = 1;
+        }
+        switch(id){
+            case 1:
+                characterIV.setImage(new Image("file:"+GameApplication.class.getResource("Black/Quieto/Gunner_Black_Idle_1.png").getPath()));
+                break;
+            case 2:
+                characterIV.setImage(new Image("file:"+GameApplication.class.getResource("Blue/Quieto/Gunner_Blue_Idle_1.png").getPath()));
+                break;
+            case 3:
+                characterIV.setImage(new Image("file:"+GameApplication.class.getResource("Red/Quieto/Gunner_Red_Idle_1.png").getPath()));
+        }
     }
     @FXML
     public void mouseEnteredPlay(MouseEvent mouseEvent) {

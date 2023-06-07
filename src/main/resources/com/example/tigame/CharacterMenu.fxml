@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.tigame.CharacterMenuController">
+   <children>
+      <Canvas fx:id="canvas" height="600.0" width="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Label layoutX="167.0" layoutY="67.0" text="Character Selection" textFill="#a4468d">
+         <font>
+            <Font name="Bodoni MT Black" size="50.0" />
+         </font>
+      </Label>
+      <Label fx:id="returnBT" alignment="CENTER" contentDisplay="CENTER" layoutX="14.0" layoutY="14.0" onMouseClicked="#ReturnToMenu" onMouseEntered="#mouseEnteredReturn" onMouseExited="#mouseExitedReturn" prefHeight="43.0" prefWidth="143.0" text="Return" textFill="#a4468d">
+         <font>
+            <Font name="Bodoni MT Black" size="35.0" />
+         </font>
+      </Label>
+      <Rectangle fx:id="character1SQ" arcHeight="5.0" arcWidth="5.0" fill="#92669e" height="225.0" layoutX="28.0" layoutY="204.0" onMouseClicked="#ch1Select" onMouseEntered="#ch1Entered" onMouseExited="#ch1Exited" stroke="BLACK" strokeType="INSIDE" strokeWidth="8.0" width="225.0" />
+      <Rectangle fx:id="character2SQ" arcHeight="5.0" arcWidth="5.0" fill="#92669e" height="225.0" layoutX="288.0" layoutY="204.0" onMouseClicked="#ch2Select" onMouseEntered="#ch2Entered" onMouseExited="#ch2Exited" stroke="BLACK" strokeType="INSIDE" strokeWidth="8.0" width="225.0" />
+      <Rectangle fx:id="character3SQ" arcHeight="5.0" arcWidth="5.0" fill="#92669e" height="225.0" layoutX="548.0" layoutY="204.0" onMouseClicked="#ch3Select" onMouseEntered="#ch3Entered" onMouseExited="#ch3Exited" stroke="BLACK" strokeType="INSIDE" strokeWidth="8.0" width="225.0" />
+      <ImageView fx:id="ch1IV" fitHeight="150.0" fitWidth="150.0" layoutX="66.0" layoutY="242.0" onMouseClicked="#ch1Select" onMouseEntered="#ch1Entered" onMouseExited="#ch1Exited" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="ch2IV" fitHeight="150.0" fitWidth="150.0" layoutX="325.0" layoutY="242.0" onMouseClicked="#ch2Select" onMouseEntered="#ch2Entered" onMouseExited="#ch2Exited" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="ch3IV" fitHeight="150.0" fitWidth="150.0" layoutX="586.0" layoutY="242.0" onMouseClicked="#ch3Select" onMouseEntered="#ch3Entered" onMouseExited="#ch3Exited" pickOnBounds="true" preserveRatio="true" />
+   </children>
+</AnchorPane>

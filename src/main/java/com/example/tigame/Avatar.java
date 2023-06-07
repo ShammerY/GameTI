@@ -7,11 +7,13 @@ import javafx.scene.paint.Color;
 public class Avatar extends Drawing implements Runnable{
     private boolean isRunning = false;
     private boolean isFacingRight = true;
+    private int id;
     private Image[] idle;
     private Image[] run;
     private int durability;
     private int frame;
-    public Avatar(){
+    public Avatar(int id){
+        this.id = id;
         durability = 3;
         frame = 0;
         pos.setX(400);
@@ -19,18 +21,47 @@ public class Avatar extends Drawing implements Runnable{
         this.width = 50;
         this.heigh = 50;
         idle = new Image[5];
-        for(int i=0;i<5;i++){
-            String uri = "file:"+GameApplication.class.getResource("Black/Quieto/Gunner_Black_Idle_"+(i+1)+".png").getPath();
-            idle[i] = new Image(uri);
-        }
         run = new Image[6];
-        for(int i=0;i<6;i++){
-            String uri = "file:"+GameApplication.class.getResource("Black/Run/Gunner_Black_Run_"+(i+1)+".png").getPath();
-            run[i] = new Image(uri);
-        }
-
+        setAvatarImage();
     }
+    public Image[] getImageIdle(){return this.idle;}
+    public Image[] getImageRun(){return this.run;}
+    public void setWidth(int n){this.width = n;}
+    public void setHeigh(int n){this.heigh = n;}
+    private void setAvatarImage(){
+        switch(id){
+            case 1:
+                for(int i=0;i<5;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Black/Quieto/Gunner_Black_Idle_"+(i+1)+".png").getPath();
+                    idle[i] = new Image(uri);
+                }
+                for(int i=0;i<6;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Black/Run/Gunner_Black_Run_"+(i+1)+".png").getPath();
+                    run[i] = new Image(uri);
+                }
+                break;
+            case 2:
+                for(int i=0;i<5;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Blue/Quieto/Gunner_Blue_Idle_"+(i+1)+".png").getPath();
+                    idle[i] = new Image(uri);
+                }
+                for(int i=0;i<6;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Blue/Run/Gunner_Blue_Run_"+(i+1)+".png").getPath();
+                    run[i] = new Image(uri);
+                }
+                break;
+            case 3:
+                for(int i=0;i<5;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Red/Quieto/Gunner_Red_Idle_"+(i+1)+".png").getPath();
+                    idle[i] = new Image(uri);
+                }
+                for(int i=0;i<6;i++){
+                    String uri = "file:"+GameApplication.class.getResource("Red/Run/Gunner_Red_Run_"+(i+1)+".png").getPath();
+                    run[i] = new Image(uri);
+                }
 
+        }
+    }
     public int getDurability() {
         return durability;
     }
@@ -65,7 +96,6 @@ public class Avatar extends Drawing implements Runnable{
 
 
     }
-
     @Override
     public void run() {
         while (true) {

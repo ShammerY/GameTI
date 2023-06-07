@@ -28,6 +28,8 @@ public class GameController implements Initializable, Runnable {
     @FXML
     public Rectangle bgSquare;
     @FXML
+    public Label ammoLB;
+    @FXML
     private Canvas canvas;
     private boolean isAlive = true;
     private GraphicsContext gc;
@@ -58,7 +60,7 @@ public class GameController implements Initializable, Runnable {
         gameUI = new GameUI();
         time = 0;
         magazine = 20;
-        avatar = new Avatar();
+        avatar = new Avatar(CharacterSelection.getInstance().getCharacterID());
         new Thread(avatar).start();
         //timer = new Timer();
         //new Thread(timer).start();
@@ -166,6 +168,7 @@ public class GameController implements Initializable, Runnable {
     public void onMousePressed(MouseEvent e){
         //setFacing(e);
         if(magazine<=0){
+            ammoLB.setText("R");
             return;
         }
         double avatarPosX = 0;
@@ -188,6 +191,7 @@ public class GameController implements Initializable, Runnable {
                 new Bullet(new Vector(avatarPosX, avatarPosY), diff)
         );
         magazine--;
+        ammoLB.setText(""+magazine);
     }
     public void draw(){
         Thread thread = new Thread(()->{
@@ -209,10 +213,7 @@ public class GameController implements Initializable, Runnable {
                         o.draw(gc);
                         AvatarObstacleCollition(o);
                     }
-                    for(int i=0; i< avatar.getDurability();i++){
-                        Image image = gameUI.getHearts().get(i);
-                        gc.drawImage(image,i*(800/16),0,50,50);
-                    }
+                    drawGameUI();
                     //Pintar Balas
 
                     for(int i=0 ; i<map.getBullets().size() ; i++){
@@ -222,16 +223,18 @@ public class GameController implements Initializable, Runnable {
                             map.getBullets().remove(i);
                         }else{
                             //Colision de balas con obstaculos
-                            for(int j=0;j<map.getObstacles().size();j++){
-                                Obstacle o = map.getObstacles().get(j);
-                                if(bulletObstacleCollition(b,o)){
-                                    o.setDurability(o.getDurability()-1);
-                                    map.getBullets().remove(i);
-                                    if(o.getDurability()<=0){
-                                        map.getObstacles().remove(j);
+                            try{
+                                for(int j=0;j<map.getObstacles().size();j++){
+                                    Obstacle o = map.getObstacles().get(j);
+                                    if(bulletObstacleCollition(b,o)){
+                                        o.setDurability(o.getDurability()-1);
+                                        map.getBullets().remove(i);
+                                        if(o.getDurability()<=0){
+                                            map.getObstacles().remove(j);
+                                        }
                                     }
                                 }
-                            }
+                            }catch(IndexOutOfBoundsException ex){}
                             //Colision de Balas con Enemigos
                             for(int j=0;j<map.getEnemies().size();j++){
                                 Enemy e = map.getEnemies().get(j);
@@ -269,6 +272,16 @@ public class GameController implements Initializable, Runnable {
             }
         });
         thread.start();
+    }
+
+    private void drawGameUI() {
+        for(int i=0; i< avatar.getDurability();i++){
+            Image image = gameUI.getHearts().get(i);
+            gc.drawImage(image,i*(800/16),0,50,50);
+        }
+        Image ammoImage = gameUI.getAmmoUI();
+        gc.drawImage(ammoImage,(800/16)*14,(600/12)*10,100,100);
+
     }
 
     private void mapBoundaries() {
@@ -464,6 +477,7 @@ public class GameController implements Initializable, Runnable {
         }
         if(event.getCode().equals(KeyCode.R)){
             magazine = 20;
+            ammoLB.setText(""+magazine);
         }
     }
     private void onKeyReleased(KeyEvent event){
