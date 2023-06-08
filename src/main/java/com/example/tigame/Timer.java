@@ -20,13 +20,15 @@ public class Timer implements Runnable{
             }else{
                 interval++;
             }
-            System.out.println(interval);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+    public void setInterval(long n){
+        this.interval = n;
     }
     public void stop(){
         isRunning = false;

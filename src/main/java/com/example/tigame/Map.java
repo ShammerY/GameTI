@@ -44,7 +44,7 @@ public class Map {
         int y=0;
         int enemyId = 0;
         for(int i=0;i<cant;i++){
-            enemyId = (int)Math.floor(Math.random()*3+1);
+            enemyId = (int)Math.floor(Math.random()*4+1);
             x =(int)Math.floor(Math.random()*14+1);
             y =(int)Math.floor(Math.random()*10+1);
             if(boundaries[y][x]==0){
@@ -52,6 +52,11 @@ public class Map {
             }else{
                 i--;
             }
+        }
+    }
+    public void clearBullets(){
+        while(bullets.size()>0){
+            bullets.remove(bullets.get(0));
         }
     }
 

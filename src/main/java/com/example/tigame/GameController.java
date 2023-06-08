@@ -44,7 +44,12 @@ public class GameController implements Initializable, Runnable {
     private Timer timer;
     private boolean avatarFacing = true;
     private int magazine;
-    private long lastSec;
+    private String soundfondo;
+    private String soundShoot;
+    private String soundReload;
+    private String soundFinalGame;
+    private  String soundEnemy;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -172,6 +177,7 @@ public class GameController implements Initializable, Runnable {
     public void onMousePressed(MouseEvent e){
         //setFacing(e);
         if(magazine<=0){
+            ammoLB.setTextFill(Color.CRIMSON);
             ammoLB.setText("R");
             return;
         }
@@ -184,8 +190,8 @@ public class GameController implements Initializable, Runnable {
             avatarPosX = avatar.pos.getX()-25;
             avatarPosY = avatar.pos.getY()+25;
         }
-        double diffX = e.getX() - avatarPosX;
-        double diffY = e.getY() - avatarPosY;
+        double diffX = e.getX()+12 - avatarPosX;
+        double diffY = e.getY()+12 - avatarPosY;
 
         Vector diff = new Vector(diffX,diffY);
         diff.normalize();
@@ -196,6 +202,7 @@ public class GameController implements Initializable, Runnable {
         );
         magazine--;
         ammoLB.setText(""+magazine);
+
     }
     public void draw(){
         Thread thread = new Thread(()->{
@@ -219,6 +226,7 @@ public class GameController implements Initializable, Runnable {
                         Obstacle o = map.getObstacles().get(i);
                         o.draw(gc);
                         AvatarObstacleCollition(o);
+                        //Colision Enemigo con Obstaculo
                         for(int j=0;j<map.getEnemies().size();j++){
                             Enemy e = map.getEnemies().get(j);
                             enemyObstacleCollition(o,e);
@@ -300,7 +308,7 @@ public class GameController implements Initializable, Runnable {
             }else{
                 limX = (aPos.getX()-avatar.width) - ePos.getX();
             }
-            if((limX > (-((double)avatar.width/2)) && limX < ((double)bullet.width)) && limY> (-((double)avatar.heigh/2)) && limY < ((double)bullet.heigh)){
+            if((limX > (-((double)avatar.width)) && limX < ((double)bullet.width)) && limY> (-((double)avatar.heigh)) && limY < ((double)bullet.heigh)){
                 avatar.pos.setX(canvas.getWidth()/2);
                 avatar.pos.setY(canvas.getHeight()/2);
                 avatarDamaged();
@@ -366,16 +374,36 @@ public class GameController implements Initializable, Runnable {
                     }
                     //double diffX = e.getX() - avatarPosX;
                     //double diffY = e.getY() - avatarPosY;
-                    double diffX = avatarPosX - e.pos.getX()+((double)e.width/2);
-                    double diffY = avatarPosY - e.pos.getY()+((double)e.heigh/2);
+                    double diffX = avatarPosX - (e.pos.getX()+((double)e.width/2));
+                    double diffY = avatarPosY - (e.pos.getY()+((double)e.heigh/2));
                     Vector diff = new Vector(diffX,diffY);
                     diff.normalize();
-                    diff.setMag(4);
+                    diff.setMag(2);
                     maps.get(currentMap).getBullets().add(
                             new Bullet(new Vector(e.pos.getX()+((double)e.width/2), e.pos.getY()+((double)e.heigh/2)), diff,true)
                     );
                     e.setShot(false);
                 }
+                break;
+            case 4:
+                double avatarPosX = 0;
+                double avatarPosY = 0;
+                if(avatarFacing){
+                    avatarPosX = avatar.pos.getX()+25;
+                    avatarPosY = avatar.pos.getY()+25;
+                }else{
+                    avatarPosX = avatar.pos.getX()-25;
+                    avatarPosY = avatar.pos.getY()+25;
+                }
+                double diffX = avatarPosX - (e.pos.getX()+((double)e.width/2));
+                double diffY = avatarPosY - (e.pos.getY()+((double)e.heigh/2));
+                Vector v = e.getDirection();
+                v.setX(diffX);
+                v.setY(diffY);
+                v.normalize();
+                v.setMag(1);
+                e.pos.setX(e.pos.getX()+v.getX());
+                e.pos.setY(e.pos.getY()+v.getY());
                 break;
         }
 
@@ -416,17 +444,25 @@ public class GameController implements Initializable, Runnable {
         double difLeft = Math.abs(0 - aposX);
         if(difSup<5){
             avatar.pos.setY(canvas.getHeight()-avatar.heigh-10);
+            maps.get(currentMap).clearBullets();
+            timer.setInterval(0);
             currentMap = maps.get(currentMap).getConnections()[0];
         } else if(difInf<5){
             avatar.pos.setY(10);
+            maps.get(currentMap).clearBullets();
+            timer.setInterval(0);
             currentMap = maps.get(currentMap).getConnections()[1];
         } else if(difRight<5){
             avatar.pos.setX(25+avatar.width);
             //avatar.setIsFacingRight(true);
+            timer.setInterval(0);
+            maps.get(currentMap).clearBullets();
             currentMap = maps.get(currentMap).getConnections()[2];
         } else if(difLeft<5){
             avatar.pos.setX(canvas.getWidth()-(avatar.width+25));
             //avatar.setIsFacingRight(false);
+            timer.setInterval(0);
+            maps.get(currentMap).clearBullets();
             currentMap = maps.get(currentMap).getConnections()[3];
         }
     }
@@ -490,7 +526,7 @@ public class GameController implements Initializable, Runnable {
         if(avatarFacing){
             limX = aPos.getX() - oPos.getX();
         }else{
-            limX = (aPos.getX()-50) - oPos.getX();
+            limX = (aPos.getX()-avatar.width) - oPos.getX();
         }
         if((limX > (-avatar.width) && limX < obstacle.width) && limY> (-avatar.heigh) && limY < (obstacle.heigh)){
             double difSup = Math.abs(limY+avatar.heigh);
@@ -537,6 +573,7 @@ public class GameController implements Initializable, Runnable {
     private void avatarDamaged(){
         avatar.setDurability(avatar.getDurability()-1);
         if(avatar.getDurability()>0){
+            maps.get(currentMap).clearBullets();
             currentMap = 0;
             avatar.pos.setX(canvas.getWidth()/2-((double)avatar.width/2));
             avatar.pos.setY(canvas.getHeight()/2-((double)avatar.heigh/2));
@@ -573,6 +610,7 @@ public class GameController implements Initializable, Runnable {
         }
         if(event.getCode().equals(KeyCode.R)){
             magazine = 20;
+            ammoLB.setTextFill(Color.LIGHTSLATEGRAY);
             ammoLB.setText(""+magazine);
         }
     }

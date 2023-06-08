@@ -26,6 +26,9 @@ public class Enemy extends Drawing implements Runnable{
             case 3:
                 setStormHead();
                 break;
+            case 4:
+                setReaper();
+                break;
         }
     }
     private void setFlyingEye(){
@@ -38,6 +41,17 @@ public class Enemy extends Drawing implements Runnable{
             image[i] = new Image(uri);
         }
         setRandomDirection();
+    }
+    private void setReaper(){
+        this.durability = 15;
+        this.width = 70;
+        this.heigh = 70;
+        image = new Image[8];
+        for(int i=0;i<8;i++){
+            String url = "file:"+GameApplication.class.getResource("Reaper/Bringer-of-Death_Walk_"+(i+1)+".png").getPath();
+            image[i] = new Image(url);
+        }
+        direction = new Vector(0,0);
     }
     private void setZombie(){
         this.durability = 10;
@@ -75,9 +89,10 @@ public class Enemy extends Drawing implements Runnable{
         double y = Math.floor(Math.random()*10+1)*(double)(600/12);
         double diffX = x - pos.getX();
         double diffY = y - pos.getY();
+        System.out.println(diffX+ " : "+diffY);
         direction = new Vector(diffX,diffY);
         direction.normalize();
-        direction.setMag(2);
+        direction.setMag(4);
     }
     public void shoot(){
         shot = true;
@@ -134,6 +149,9 @@ public class Enemy extends Drawing implements Runnable{
                         throw new RuntimeException(e);
                     }
                     shoot();
+                    break;
+                case 4:
+                    frame =(frame+1)%8;
                     break;
             }
             try {

@@ -2,6 +2,7 @@ package com.example.tigame;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -17,7 +18,10 @@ public class GameApplication extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource(path));
             Scene scene = new Scene(fxmlLoader.load());
             Stage stage = new Stage();
-            stage.setTitle("Hello!");
+            stage.setTitle("GAME FOR U");
+            String uri = "file:"+GameApplication.class.getResource("backgrounds/aimCursor1.png").getPath();
+            Cursor cursor = Cursor.cursor(uri);
+            scene.setCursor(cursor);
             stage.setScene(scene);
             stage.show();
         }catch(IOException ex){
