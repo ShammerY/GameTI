@@ -11,10 +11,11 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,8 +31,15 @@ public class GameController implements Initializable, Runnable {
     @FXML
     public Label ammoLB;
     @FXML
+    public Label exitLB;
+    @FXML
+    public Label resumeLB;
+    @FXML
+    public Label pauseLB;
+    @FXML
+    public Pane pauseOverlay;
+    @FXML
     private Canvas canvas;
-    private boolean isAlive = true;
     private GraphicsContext gc;
     private Avatar avatar;
     private boolean wIsPressed = false;
@@ -48,30 +56,57 @@ public class GameController implements Initializable, Runnable {
     private String soundShoot;
     private String soundReload;
     private String soundFinalGame;
-    private  String soundEnemy;
+    private  String avatarDamagedSound;
+    private AudioClip SOUNDFOND;
+    private boolean isAlive = true;
+    private boolean isPaused = false;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
         gc = canvas.getGraphicsContext2D();
         canvas.setFocusTraversable(true);
         canvas.setOnKeyPressed(this::onKeyPressed);
         canvas.setOnKeyReleased(this::onKeyReleased);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseMoved(this::onMouseMoved);
-        setGameOverMenu();
+        setOtherWindowMenu();
         setMaps();
         setEnemyMovement();
         gameUI = new GameUI();
         //time = 0;
         magazine = 20;
-        lastSec = 0;
         setAvatar();
         timer = new Timer();
         new Thread(timer).start();
         //new Thread(this).start();
         currentMap = 0;
+
+        generateStrings();
+        SOUNDFOND = new AudioClip(soundfondo);
+        playFondo(SOUNDFOND, true);
         draw();
+    }
+    private void generateStrings() {
+        this.soundfondo=("file:///" + GameApplication.getFile("sounds/fondo.mp3").getAbsolutePath().replace("\\", "/"));
+        this.soundReload=("file:///" + GameApplication.getFile("sounds/reload.mp3").getAbsolutePath().replace("\\", "/"));
+        this.soundShoot=("file:///" + GameApplication.getFile("sounds/dispara.wav").getAbsolutePath().replace("\\", "/"));
+        this.soundFinalGame=("file:///" + GameApplication.getFile("sounds/final.mp3").getAbsolutePath().replace("\\", "/"));
+        this.avatarDamagedSound=("file:///" + GameApplication.getFile("sounds/golpeEnmey.mp3").getAbsolutePath().replace("\\", "/"));
+    }
+    private void playSound(String url,boolean play) {
+        AudioClip clip = new AudioClip(url);
+        clip.setVolume(0.4);
+        clip.play();
+    }
+    private void playFondo(AudioClip soundfondo, boolean play) {
+        if(play==true){
+            soundfondo.setVolume(0.1);
+            soundfondo.play();
+        }else{
+            soundfondo.setVolume(0);
+            soundfondo.stop();
+        }
+
     }
     private void setAvatar(){
         int id = CharacterSelection.getInstance().getCharacterID();
@@ -81,7 +116,7 @@ public class GameController implements Initializable, Runnable {
         avatar = new Avatar(id);
         new Thread(avatar).start();
     }
-    private void setGameOverMenu(){
+    private void setOtherWindowMenu(){
         gameOverLB.setTextFill(Color.RED);
         returnBT.setTextFill(Color.PURPLE);
         gameOverLB.setText("");
@@ -90,6 +125,45 @@ public class GameController implements Initializable, Runnable {
         returnBT.setDisable(true);
         bgSquare.setDisable(true);
         bgSquare.setVisible(false);
+
+        pauseOverlay.setVisible(false);
+        pauseOverlay.setDisable(true);
+    }
+    private void onKeyPressed(KeyEvent event){
+        if(event.getCode().equals(KeyCode.W)){
+            wIsPressed = true;
+        }
+        if(event.getCode().equals(KeyCode.A)){
+            aIsPressed = true;
+        }
+        if(event.getCode().equals(KeyCode.S)){
+            sIsPressed = true;
+        }
+        if(event.getCode().equals(KeyCode.D)){
+            dIsPressed = true;
+        }
+        if(event.getCode().equals(KeyCode.P)){
+            showPauseMenu();
+        }
+        if(event.getCode().equals(KeyCode.R)){
+            if(magazine<20){
+                playSound(this.soundReload,true);
+            }
+            magazine = 20;
+            ammoLB.setTextFill(Color.GHOSTWHITE);
+            ammoLB.setText(""+magazine);
+        }
+    }
+    private void showPauseMenu() {
+        isPaused = true;
+        timer.stop();
+        if(isPaused){
+            pauseOverlay.setVisible(true);
+            pauseOverlay.setDisable(false);
+        } else{
+            pauseOverlay.setVisible(false);
+            pauseOverlay.setDisable(true);
+        }
     }
     private void endGame(){
         isAlive = !isAlive;
@@ -103,16 +177,12 @@ public class GameController implements Initializable, Runnable {
             gameOverLB.setText("GAME OVER");
             returnBT.setText("Return");
             timer.stop();
-            /*
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("YOU LOOSE!");
-            alert.setContentText("LOST ALL 3 LIVES");
-            alert.showAndWait();
-             */
         }
     }
     private void setMaps() {
         maps = new ArrayList<>();
+        // Conecciones de las habitaciones : {arriba,abajo,derecha,izquierda}
+        // si hay -1, no hay coneccion
         //________________Map 1______________________
         int[] connections0 = {-1,1,-1,-1};
         maps.add(new Map(0, new Boundaries().getMap1Boundaries(), connections0));
@@ -173,7 +243,6 @@ public class GameController implements Initializable, Runnable {
             }
         }
     }
-
     public void onMousePressed(MouseEvent e){
         //setFacing(e);
         if(magazine<=0){
@@ -202,6 +271,9 @@ public class GameController implements Initializable, Runnable {
         );
         magazine--;
         ammoLB.setText(""+magazine);
+        if(MouseEvent.MOUSE_CLICKED ==MouseEvent.MOUSE_CLICKED){
+            playSound(this.soundShoot,true);
+        }
 
     }
     public void draw(){
@@ -209,83 +281,86 @@ public class GameController implements Initializable, Runnable {
             while(isAlive){
                 Map map = maps.get(currentMap);
                 Platform.runLater(()->{//Runnable
-                    String url = "file:"+GameApplication.class.getResource("backgrounds/bgp.png").getPath();
-                    Image image= new Image(url);
-                    gc.drawImage(image,0,0,canvas.getWidth(),canvas.getHeight());
-                    //gc.setFill(Color.GRAY);
-                    //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
-                    //setGameUI();
-                    avatar.draw(gc);
-                    avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
+                    if(!isPaused){
+                        String url = "file:"+GameApplication.class.getResource("backgrounds/bgp.png").getPath();
+                        Image image= new Image(url);
+                        gc.drawImage(image,0,0,canvas.getWidth(),canvas.getHeight());
+                        //gc.setFill(Color.GRAY);
+                        //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
+                        //setGameUI();
+                        avatar.draw(gc);
+                        avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
 
-                    if(avatar.getDurability()<=0){
-                        endGame();
-                    }
-                    //Pintar Obstaculos
-                    for(int i=0;i<map.getObstacles().size();i++){
-                        Obstacle o = map.getObstacles().get(i);
-                        o.draw(gc);
-                        AvatarObstacleCollition(o);
-                        //Colision Enemigo con Obstaculo
-                        for(int j=0;j<map.getEnemies().size();j++){
-                            Enemy e = map.getEnemies().get(j);
-                            enemyObstacleCollition(o,e);
-
+                        if(avatar.getDurability()<=0){
+                            SOUNDFOND.stop();
+                            playSound(soundFinalGame,true);
+                            endGame();
                         }
-                    }
-                    drawGameUI();
-                    //Pintar Balas
+                        //Pintar Obstaculos
+                        for(int i=0;i<map.getObstacles().size();i++){
+                            Obstacle o = map.getObstacles().get(i);
+                            o.draw(gc);
+                            AvatarObstacleCollition(o);
+                            //Colision Enemigo con Obstaculo
+                            for(int j=0;j<map.getEnemies().size();j++){
+                                Enemy e = map.getEnemies().get(j);
+                                enemyObstacleCollition(o,e);
 
-                    for(int i=0 ; i<map.getBullets().size() ; i++){
-                        Bullet b = map.getBullets().get(i);
-                        b.draw(gc);
-                        if(isOutside(b.pos.getX(),b.pos.getY())){
-                            map.getBullets().remove(i);
-                        }else{
+                            }
+                        }
+                        drawGameUI();
+                        //Pintar Balas
 
-                            try{
-                                //Colision de Balas enemigas con jugador
-                                bulletAvatarCollition(b);
+                        for(int i=0 ; i<map.getBullets().size() ; i++){
+                            Bullet b = map.getBullets().get(i);
+                            b.draw(gc);
+                            if(isOutside(b.pos.getX(),b.pos.getY())){
+                                map.getBullets().remove(i);
+                            }else{
 
-                                //Colision de balas con obstaculos
-                                for(int j=0;j<map.getObstacles().size();j++){
-                                    Obstacle o = map.getObstacles().get(j);
-                                    if(bulletObstacleCollition(b,o)){
-                                        o.setDurability(o.getDurability()-1);
-                                        map.getBullets().remove(i);
-                                        if(o.getDurability()<=0){
-                                            map.getObstacles().remove(j);
+                                try{
+                                    //Colision de Balas enemigas con jugador
+                                    bulletAvatarCollition(b);
+
+                                    //Colision de balas con obstaculos
+                                    for(int j=0;j<map.getObstacles().size();j++){
+                                        Obstacle o = map.getObstacles().get(j);
+                                        if(bulletObstacleCollition(b,o)){
+                                            o.setDurability(o.getDurability()-1);
+                                            map.getBullets().remove(i);
+                                            if(o.getDurability()<=0){
+                                                map.getObstacles().remove(j);
+                                            }
                                         }
                                     }
-                                }
-                                //Colision Balas con Enemigos
-                                for(int j=0;j<map.getEnemies().size();j++){
-                                    Enemy e = map.getEnemies().get(j);
-                                    if(bulletEnemyCollition(b,e)){
-                                        e.setDurability(e.getDurability()-1);
-                                        map.getBullets().remove(i);
-                                        if(e.getDurability()<=0){
-                                            map.getEnemies().remove(j);
+                                    //Colision Balas con Enemigos
+                                    for(int j=0;j<map.getEnemies().size();j++){
+                                        Enemy e = map.getEnemies().get(j);
+                                        if(bulletEnemyCollition(b,e)){
+                                            e.setDurability(e.getDurability()-1);
+                                            map.getBullets().remove(i);
+                                            if(e.getDurability()<=0){
+                                                map.getEnemies().remove(j);
+                                            }
                                         }
                                     }
-                                }
-                            }catch(IndexOutOfBoundsException ex){}
-                            //Colision de Balas con Enemigos
+                                }catch(IndexOutOfBoundsException ex){}
+                                //Colision de Balas con Enemigos
+                            }
                         }
-                    }
-                    //Pintar Enemigos
-                    for( int i=0;i<map.getEnemies().size();i++){
-                        Enemy e = map.getEnemies().get(i);
-                        e.draw(gc);
-                        //enemyBounceMovement(e);
-                        enemyMovement(e);
-                        AvatarEnemyCollition(e);
+                        //Pintar Enemigos
+                        for( int i=0;i<map.getEnemies().size();i++){
+                            Enemy e = map.getEnemies().get(i);
+                            e.draw(gc);
+                            //enemyBounceMovement(e);
+                            enemyMovement(e);
+                            AvatarEnemyCollition(e);
+                        }
                     }
                 });
                 playerMovement();
                 //calculateTime();
                 AvatarCollideWithMapBoundary();
-                lastSec = timer.getInterval();
 
                 try{
                     Thread.sleep(16);
@@ -296,7 +371,6 @@ public class GameController implements Initializable, Runnable {
         });
         thread.start();
     }
-
     private void bulletAvatarCollition(Bullet bullet) {
         if(bullet.isEnemyBullet()){
             Vector aPos = avatar.pos;
@@ -385,7 +459,7 @@ public class GameController implements Initializable, Runnable {
                     e.setShot(false);
                 }
                 break;
-            case 4:
+            case 4,5:
                 double avatarPosX = 0;
                 double avatarPosY = 0;
                 if(avatarFacing){
@@ -401,7 +475,11 @@ public class GameController implements Initializable, Runnable {
                 v.setX(diffX);
                 v.setY(diffY);
                 v.normalize();
-                v.setMag(1);
+                if(e.getId()==4){
+                    v.setMag(1);
+                }else{
+                    v.setMag(2);
+                }
                 e.pos.setX(e.pos.getX()+v.getX());
                 e.pos.setY(e.pos.getY()+v.getY());
                 break;
@@ -409,17 +487,17 @@ public class GameController implements Initializable, Runnable {
 
     }
     private void mapBoundaries(Enemy e) {
-        if(e.pos.getX()<=0){
-            e.pos.setX(10);
+        if(e.pos.getX()<=50){
+            e.pos.setX(60);
         }
-        if(e.pos.getX()>= canvas.getWidth()-e.width){
-            e.pos.setX(canvas.getWidth()-e.width-5);
+        if(e.pos.getX()>= canvas.getWidth()-e.width-50){
+            e.pos.setX(canvas.getWidth()-e.width-55);
         }
-        if(e.pos.getY()<=0){
-            e.pos.setY(5);
+        if(e.pos.getY()<=50){
+            e.pos.setY(60);
         }
-        if(avatar.pos.getY()>canvas.getHeight()-e.heigh){
-            e.pos.setY(canvas.getHeight()-e.heigh-5);
+        if(e.pos.getY()>=canvas.getHeight()-e.heigh-50){
+            e.pos.setY(canvas.getHeight()-e.heigh-55);
         }
     }
     private void drawGameUI() {
@@ -428,8 +506,7 @@ public class GameController implements Initializable, Runnable {
             gc.drawImage(image,i*(800/16),0,50,50);
         }
         Image ammoImage = gameUI.getAmmoUI();
-        gc.drawImage(ammoImage,(800/16)*14,(600/12)*10,100,100);
-
+        gc.drawImage(ammoImage,(800/16)*15,(600/12)*0,50,50);
     }
     private void AvatarCollideWithMapBoundary() {
         double aposX = 0;
@@ -493,31 +570,6 @@ public class GameController implements Initializable, Runnable {
         }
         return false;
     }
-    private void enemyBounceMovement(Enemy enemy){
-        if(enemy.isMovingUp()){
-            enemy.pos.setY(enemy.pos.getY()-2);
-        }else{
-            enemy.pos.setY(enemy.pos.getY()+2);
-        }
-        if(enemy.isMovingRight()){
-            enemy.pos.setX(enemy.pos.getX()+2);
-        }else{
-            enemy.pos.setX(enemy.pos.getX()-2);
-        }
-        if(enemy.pos.getY()<=0){
-            enemy.setMovingUp(false);
-        }
-        if(enemy.pos.getY()+70>=canvas.getHeight()){
-            enemy.setMovingUp(true);
-        }
-        if(enemy.pos.getX()+50>=canvas.getWidth()){
-            enemy.setMovingRight(false);
-        }
-        if(enemy.pos.getX()<=0){
-            enemy.setMovingRight(true);
-        }
-
-    }
     private void AvatarObstacleCollition(Obstacle obstacle){
         Vector aPos = avatar.pos;
         Vector oPos = obstacle.pos;
@@ -572,6 +624,7 @@ public class GameController implements Initializable, Runnable {
     }
     private void avatarDamaged(){
         avatar.setDurability(avatar.getDurability()-1);
+        playSound(avatarDamagedSound,true);
         if(avatar.getDurability()>0){
             maps.get(currentMap).clearBullets();
             currentMap = 0;
@@ -592,28 +645,6 @@ public class GameController implements Initializable, Runnable {
     private boolean isOutside(double x, double y){
         return (x<0 || x+20>canvas.getWidth() || y<0 || y+20> canvas.getHeight());
     }
-    private void onKeyPressed(KeyEvent event){
-        if(event.getCode().equals(KeyCode.W)){
-            wIsPressed = true;
-        }
-        if(event.getCode().equals(KeyCode.A)){
-            aIsPressed = true;
-        }
-        if(event.getCode().equals(KeyCode.S)){
-            sIsPressed = true;
-        }
-        if(event.getCode().equals(KeyCode.D)){
-            dIsPressed = true;
-        }
-        if(event.getCode().equals(KeyCode.P)){
-            endGame();
-        }
-        if(event.getCode().equals(KeyCode.R)){
-            magazine = 20;
-            ammoLB.setTextFill(Color.LIGHTSLATEGRAY);
-            ammoLB.setText(""+magazine);
-        }
-    }
     private void onKeyReleased(KeyEvent event){
         if(event.getCode().equals(KeyCode.W)){
             wIsPressed = false;
@@ -628,13 +659,28 @@ public class GameController implements Initializable, Runnable {
             dIsPressed = false;
         }
     }
+    public void bucle(){
+        Thread thread = new Thread(()-> {
+            while (true) {
+                //shoot();
+                System.out.println("shoot");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        thread.start();
+    }
 
     @Override
     public void run() {
-
     }
     @FXML
     public void returnToMenu(MouseEvent mouseEvent) {
+        SOUNDFOND.stop();
+        timer = null;
         GameApplication.openWindow("menuWindow.fxml");
         Stage stage = (Stage) returnBT.getScene().getWindow();
         stage.close();
@@ -646,5 +692,29 @@ public class GameController implements Initializable, Runnable {
     @FXML
     public void returnMouseExit(MouseEvent mouseEvent) {
         returnBT.setTextFill(Color.PURPLE);
+    }
+    @FXML
+    public void returnToMenuMouseEnter(MouseEvent mouseEvent) {
+        exitLB.setTextFill(Color.RED);
+    }
+    @FXML
+    public void returnToMenuMouseExit(MouseEvent mouseEvent) {
+        exitLB.setTextFill(Color.WHITE);
+    }
+    @FXML
+    public void continueGameMouseEnter(MouseEvent mouseEvent) {
+        resumeLB.setTextFill(Color.RED);
+    }
+    @FXML
+    public void continueGameMouseExit(MouseEvent mouseEvent) {
+        resumeLB.setTextFill(Color.WHITE);
+    }
+    @FXML
+    public void continueGame(MouseEvent mouseEvent) {
+        isPaused = false;
+        timer.start();
+        new Thread(timer).start();
+        pauseOverlay.setVisible(false);
+        pauseOverlay.setDisable(true);
     }
 }

@@ -31,10 +31,6 @@ public class Boundaries {
             boundaries[i][15] = 2;
         }
         boundaries = infEntrance(boundaries);
-        //Obstaculos
-        boundaries[4][6] = 1;
-        boundaries[9][2] = 1;
-        boundaries[5][13] = 1;
         return boundaries;
     }
     public int[][] getMap2Boundaries(){
@@ -81,9 +77,7 @@ public class Boundaries {
         }
         boundaries = supEntrance(boundaries);
         boundaries = leftEntrance(boundaries);
-        boundaries[4][4] = 1;
-        boundaries[7][7] = 1;
-        boundaries[9][9] = 1;
+
         return boundaries;
     }
     public int[][] getMap5Boundaries(){
@@ -114,9 +108,7 @@ public class Boundaries {
         boundaries = supEntrance(boundaries);
         boundaries = rightEntrance(boundaries);
         boundaries = infEntrance(boundaries);
-        boundaries[4][4] = 1;
-        boundaries[7][7] = 1;
-        boundaries[9][9] = 1;
+
         return boundaries;
     }
     private int[][] supEntrance(int[][] boundaries){
@@ -124,6 +116,10 @@ public class Boundaries {
         boundaries[0][7] = 0;
         boundaries[0][8] = 0;
         boundaries[0][9] = 0;
+        boundaries[1][6] = 3;
+        boundaries[1][7] = 3;
+        boundaries[1][8] = 3;
+        boundaries[1][9] = 3;
         return boundaries;
     }
     private int[][] infEntrance(int[][] boundaries){
@@ -131,6 +127,10 @@ public class Boundaries {
         boundaries[11][7] = 0;
         boundaries[11][8] = 0;
         boundaries[11][9] = 0;
+        boundaries[10][6] = 3;
+        boundaries[10][7] = 3;
+        boundaries[10][8] = 3;
+        boundaries[10][9] = 3;
         return boundaries;
     }
     private int[][] rightEntrance(int[][] boundaries){
@@ -138,6 +138,10 @@ public class Boundaries {
         boundaries[5][15] = 0;
         boundaries[6][15] = 0;
         boundaries[7][15] = 0;
+        boundaries[4][14] = 3;
+        boundaries[5][14] = 3;
+        boundaries[6][14] = 3;
+        boundaries[7][14] = 3;
         return boundaries;
     }
     private int[][] leftEntrance(int[][] boundaries){
@@ -145,6 +149,10 @@ public class Boundaries {
         boundaries[5][0] = 0;
         boundaries[6][0] = 0;
         boundaries[7][0] = 0;
+        boundaries[4][1] = 3;
+        boundaries[5][1] = 3;
+        boundaries[6][1] = 3;
+        boundaries[7][1] = 3;
         return boundaries;
     }
 }

@@ -1,7 +1,10 @@
 package com.example.tigame;
 
+import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+
+import javax.crypto.spec.PSource;
 
 public class Enemy extends Drawing implements Runnable{
     private Image[] image;
@@ -29,10 +32,13 @@ public class Enemy extends Drawing implements Runnable{
             case 4:
                 setReaper();
                 break;
+            case 5:
+                setSkeleton();
+                break;
         }
     }
     private void setFlyingEye(){
-        this.durability = 10;
+        this.durability = 5;
         this.width = 50;
         this.heigh = 40;
         image = new Image[8];
@@ -42,8 +48,19 @@ public class Enemy extends Drawing implements Runnable{
         }
         setRandomDirection();
     }
+    private void setSkeleton(){
+        this.durability = 2;
+        this.width = 40;
+        this.heigh = 44;
+        image = new Image[12];
+        for(int i=0; i<12;i++){
+            String uri = "file:"+GameApplication.class.getResource("skeleton/Skeleton enemy_"+(i+1)+".png").getPath();
+            image[i] = new Image(uri);
+        }
+        direction = new Vector(0,0);
+    }
     private void setReaper(){
-        this.durability = 15;
+        this.durability = 10;
         this.width = 70;
         this.heigh = 70;
         image = new Image[8];
@@ -54,7 +71,7 @@ public class Enemy extends Drawing implements Runnable{
         direction = new Vector(0,0);
     }
     private void setZombie(){
-        this.durability = 10;
+        this.durability = 5;
         this.width = 50;
         this.heigh = 70;
         image = new Image[5];
@@ -64,7 +81,7 @@ public class Enemy extends Drawing implements Runnable{
         }
     }
     private void setStormHead(){
-        this.durability = 10;
+        this.durability = 5;
         this.width = 35;
         this.heigh = 70;
         image = new Image[9];
@@ -89,7 +106,6 @@ public class Enemy extends Drawing implements Runnable{
         double y = Math.floor(Math.random()*10+1)*(double)(600/12);
         double diffX = x - pos.getX();
         double diffY = y - pos.getY();
-        System.out.println(diffX+ " : "+diffY);
         direction = new Vector(diffX,diffY);
         direction.normalize();
         direction.setMag(4);
@@ -128,11 +144,13 @@ public class Enemy extends Drawing implements Runnable{
 
     @Override
     public void draw(GraphicsContext gc) {
+        System.out.println("frame"+id);
         gc.drawImage(image[frame],pos.getX(),pos.getY(),this.width,this.heigh);
     }
 
     @Override
     public void run() {
+        bucle();
         while (true) {
             switch(this.id){
                 case 1:
@@ -143,15 +161,12 @@ public class Enemy extends Drawing implements Runnable{
                     break;
                 case 3:
                     frame = (frame+1)%9;
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    shoot();
                     break;
                 case 4:
                     frame =(frame+1)%8;
+                    break;
+                case 5:
+                    frame = (frame+1)%12;
                     break;
             }
             try {
@@ -160,5 +175,18 @@ public class Enemy extends Drawing implements Runnable{
                 throw new RuntimeException(e);
             }
         }
+    }
+    public void bucle(){
+        Thread thread = new Thread(()-> {
+            while (true) {
+                shoot();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        thread.start();
     }
 }

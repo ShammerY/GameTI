@@ -20,6 +20,7 @@ public class Timer implements Runnable{
             }else{
                 interval++;
             }
+            System.out.println(interval);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -32,6 +33,9 @@ public class Timer implements Runnable{
     }
     public void stop(){
         isRunning = false;
+    }
+    public void start(){
+        isRunning = true;
     }
     public long getCurrentTime(){return currentTime;}
     public long getInterval(){return this.interval;}

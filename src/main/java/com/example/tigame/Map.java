@@ -39,12 +39,12 @@ public class Map {
         }
     }
     private void setEnemies(){
-        int cant = (int)Math.floor(Math.random()*5+5);
+        int cant = (int)Math.floor(Math.random()*7+5);
         int x=0;
         int y=0;
         int enemyId = 0;
         for(int i=0;i<cant;i++){
-            enemyId = (int)Math.floor(Math.random()*4+1);
+            enemyId = (int)Math.floor(Math.random()*5+1);
             x =(int)Math.floor(Math.random()*14+1);
             y =(int)Math.floor(Math.random()*10+1);
             if(boundaries[y][x]==0){
