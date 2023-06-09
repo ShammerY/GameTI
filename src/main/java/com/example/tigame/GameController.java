@@ -39,6 +39,18 @@ public class GameController implements Initializable, Runnable {
     @FXML
     public Pane pauseOverlay;
     @FXML
+    public Pane victoryOverlay;
+    @FXML
+    public Rectangle victoryRec;
+    @FXML
+    public Label finalScoreLB;
+    @FXML
+    public Label victoryTitleLB;
+    @FXML
+    public Label scoreLB;
+    @FXML
+    public Label btMenu;
+    @FXML
     private Canvas canvas;
     private GraphicsContext gc;
     private Avatar avatar;
@@ -48,6 +60,7 @@ public class GameController implements Initializable, Runnable {
     private boolean dIsPressed = false;
     private int currentMap;
     private ArrayList<Map> maps;
+    private boolean avatarWin = false;
     private GameUI gameUI;
     private Timer timer;
     private boolean avatarFacing = true;
@@ -58,6 +71,7 @@ public class GameController implements Initializable, Runnable {
     private String soundFinalGame;
     private  String avatarDamagedSound;
     private AudioClip SOUNDFOND;
+    private int enemyCount;
     private boolean isAlive = true;
     private boolean isPaused = false;
 
@@ -72,10 +86,11 @@ public class GameController implements Initializable, Runnable {
         setOtherWindowMenu();
         setMaps();
         setEnemyMovement();
-        gameUI = new GameUI();
+        enemyCount = setEnemyCount();
         //time = 0;
         magazine = 20;
         setAvatar();
+        gameUI = new GameUI(avatar.getDurability());
         timer = new Timer();
         new Thread(timer).start();
         //new Thread(this).start();
@@ -86,6 +101,15 @@ public class GameController implements Initializable, Runnable {
         playFondo(SOUNDFOND, true);
         draw();
     }
+
+    private int setEnemyCount() {
+        int count = 0;
+        for(Map map:maps){
+            count+=map.getEnemies().size();
+        }
+        return count;
+    }
+
     private void generateStrings() {
         this.soundfondo=("file:///" + GameApplication.getFile("sounds/fondo.mp3").getAbsolutePath().replace("\\", "/"));
         this.soundReload=("file:///" + GameApplication.getFile("sounds/reload.mp3").getAbsolutePath().replace("\\", "/"));
@@ -106,7 +130,6 @@ public class GameController implements Initializable, Runnable {
             soundfondo.setVolume(0);
             soundfondo.stop();
         }
-
     }
     private void setAvatar(){
         int id = CharacterSelection.getInstance().getCharacterID();
@@ -117,6 +140,7 @@ public class GameController implements Initializable, Runnable {
         new Thread(avatar).start();
     }
     private void setOtherWindowMenu(){
+        //Game over window
         gameOverLB.setTextFill(Color.RED);
         returnBT.setTextFill(Color.PURPLE);
         gameOverLB.setText("");
@@ -125,9 +149,12 @@ public class GameController implements Initializable, Runnable {
         returnBT.setDisable(true);
         bgSquare.setDisable(true);
         bgSquare.setVisible(false);
-
+        //pauseWindow
         pauseOverlay.setVisible(false);
         pauseOverlay.setDisable(true);
+        //victory Window
+        victoryOverlay.setVisible(false);
+        victoryOverlay.setDisable(true);
     }
     private void onKeyPressed(KeyEvent event){
         if(event.getCode().equals(KeyCode.W)){
@@ -165,19 +192,31 @@ public class GameController implements Initializable, Runnable {
             pauseOverlay.setDisable(true);
         }
     }
+    private void displayVictoryWindow() {
+        isAlive = false;
+        int totalTime = (int)timer.getCurrentTime();
+        int score = 300-totalTime;
+        System.out.println(timer.getCurrentTime());
+        System.out.println(""+score);
+        System.out.println(totalTime);
+        victoryOverlay.setDisable(false);
+        victoryOverlay.setVisible(true);
+        scoreLB.setText(""+score+" pt");
+
+
+        //GameApplication.openWindow("VictoryMenu.fxml");
+        //Stage stage = (Stage)returnBT.getScene().getWindow();
+        //stage.close();
+    }
     private void endGame(){
-        isAlive = !isAlive;
-        if(isAlive && avatar.getDurability()>0){
-            draw();
-        }else if(avatar.getDurability()<=0){
-            gameOverLB.setDisable(false);
-            returnBT.setDisable(false);
-            bgSquare.setDisable(false);
-            bgSquare.setVisible(true);
-            gameOverLB.setText("GAME OVER");
-            returnBT.setText("Return");
-            timer.stop();
-        }
+        isAlive = false;
+        gameOverLB.setDisable(false);
+        returnBT.setDisable(false);
+        bgSquare.setDisable(false);
+        bgSquare.setVisible(true);
+        gameOverLB.setText("GAME OVER "+timer.getCurrentTime());
+        returnBT.setText("Return");
+        timer.stop();
     }
     private void setMaps() {
         maps = new ArrayList<>();
@@ -226,28 +265,14 @@ public class GameController implements Initializable, Runnable {
             }
         }
     }
-    public void setFacing(MouseEvent mouseEvent){
-        double mouseX = mouseEvent.getX();
-        double avatarX = avatar.pos.getX();
-        if(mouseX>avatarX){
-            avatar.setIsFacingRight(true);
-            if(avatarFacing==false && avatar.isFacingRight()==true){
-                avatar.pos.setX(avatar.pos.getX()-50);
-                avatarFacing = avatar.isFacingRight();
-            }
-        }else{
-            avatar.setIsFacingRight(false);
-            if(avatarFacing!=avatar.isFacingRight()){
-                avatar.pos.setX(avatar.pos.getX()+50);
-                avatarFacing = avatar.isFacingRight();
-            }
-        }
-    }
     public void onMousePressed(MouseEvent e){
         //setFacing(e);
         if(magazine<=0){
             ammoLB.setTextFill(Color.CRIMSON);
             ammoLB.setText("R");
+            return;
+        }
+        if(!avatar.isShoot()){
             return;
         }
         double avatarPosX = 0;
@@ -271,6 +296,7 @@ public class GameController implements Initializable, Runnable {
         );
         magazine--;
         ammoLB.setText(""+magazine);
+        //shootColdown();
         if(MouseEvent.MOUSE_CLICKED ==MouseEvent.MOUSE_CLICKED){
             playSound(this.soundShoot,true);
         }
@@ -288,9 +314,12 @@ public class GameController implements Initializable, Runnable {
                         //gc.setFill(Color.GRAY);
                         //gc.fillRect(0,0,canvas.getWidth(),canvas.getHeight());
                         //setGameUI();
-                        avatar.draw(gc);
-                        avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
 
+                        if(avatarWin){
+                            SOUNDFOND.stop();
+                            timer.stop();
+                            displayVictoryWindow();
+                        }
                         if(avatar.getDurability()<=0){
                             SOUNDFOND.stop();
                             playSound(soundFinalGame,true);
@@ -308,7 +337,25 @@ public class GameController implements Initializable, Runnable {
 
                             }
                         }
-                        drawGameUI();
+                        //Bordes Bloqueados
+                        if(currentMap==5){
+                            if(enemyCount>0){
+                                for(int i=0;i<map.getLockedBlocks().size();i++){
+                                    Obstacle o = map.getLockedBlocks().get(i);
+                                    o.draw(gc);
+                                    AvatarObstacleCollition(o);
+                                }
+                            }else{
+                                for(int i=6;i<=9;i++){
+                                    Image finishI = gameUI.getFinishBlock();
+                                    gc.drawImage(finishI,i*(800/16),0,50,50);
+                                }
+                            }
+                        }
+                        avatar.draw(gc);
+                        avatar.setRunning(wIsPressed || aIsPressed || sIsPressed || dIsPressed);
+
+
                         //Pintar Balas
 
                         for(int i=0 ; i<map.getBullets().size() ; i++){
@@ -341,6 +388,7 @@ public class GameController implements Initializable, Runnable {
                                             map.getBullets().remove(i);
                                             if(e.getDurability()<=0){
                                                 map.getEnemies().remove(j);
+                                                enemyCount--;
                                             }
                                         }
                                     }
@@ -348,6 +396,7 @@ public class GameController implements Initializable, Runnable {
                                 //Colision de Balas con Enemigos
                             }
                         }
+
                         //Pintar Enemigos
                         for( int i=0;i<map.getEnemies().size();i++){
                             Enemy e = map.getEnemies().get(i);
@@ -356,6 +405,7 @@ public class GameController implements Initializable, Runnable {
                             enemyMovement(e);
                             AvatarEnemyCollition(e);
                         }
+                        drawGameUI();
                     }
                 });
                 playerMovement();
@@ -371,6 +421,13 @@ public class GameController implements Initializable, Runnable {
         });
         thread.start();
     }
+
+    private void lockedBlockAvatarColision(Obstacle o) {
+        if(avatar.pos.getY()<50){
+            avatar.pos.setY(avatar.pos.getY()+5);
+        }
+    }
+
     private void bulletAvatarCollition(Bullet bullet) {
         if(bullet.isEnemyBullet()){
             Vector aPos = avatar.pos;
@@ -520,29 +577,38 @@ public class GameController implements Initializable, Runnable {
         double difRight = Math.abs(canvas.getWidth() - (aposX+avatar.width));
         double difLeft = Math.abs(0 - aposX);
         if(difSup<5){
-            avatar.pos.setY(canvas.getHeight()-avatar.heigh-10);
-            maps.get(currentMap).clearBullets();
-            timer.setInterval(0);
-            currentMap = maps.get(currentMap).getConnections()[0];
+            if(currentMap==5){
+                avatarWin = true;
+            }else{
+                avatar.pos.setY(canvas.getHeight()-avatar.heigh-10);
+                maps.get(currentMap).clearBullets();
+                timer.setInterval(0);
+                currentMap = maps.get(currentMap).getConnections()[0];
+                maps.get(currentMap).resetEnemyPos();
+            }
         } else if(difInf<5){
             avatar.pos.setY(10);
             maps.get(currentMap).clearBullets();
             timer.setInterval(0);
             currentMap = maps.get(currentMap).getConnections()[1];
+            maps.get(currentMap).resetEnemyPos();
         } else if(difRight<5){
             avatar.pos.setX(25+avatar.width);
-            //avatar.setIsFacingRight(true);
             timer.setInterval(0);
             maps.get(currentMap).clearBullets();
             currentMap = maps.get(currentMap).getConnections()[2];
+            maps.get(currentMap).resetEnemyPos();
         } else if(difLeft<5){
             avatar.pos.setX(canvas.getWidth()-(avatar.width+25));
-            //avatar.setIsFacingRight(false);
             timer.setInterval(0);
             maps.get(currentMap).clearBullets();
             currentMap = maps.get(currentMap).getConnections()[3];
+            maps.get(currentMap).resetEnemyPos();
         }
     }
+
+
+
     private void playerMovement() {
         if(wIsPressed){
             avatar.pos.setY(avatar.pos.getY()-3);
@@ -673,10 +739,23 @@ public class GameController implements Initializable, Runnable {
         });
         thread.start();
     }
+    public Avatar getAvatar(){return avatar;}
 
     @Override
     public void run() {
+        shootColdown();
     }
+
+    private void shootColdown() {
+        avatar.setShoot(false);
+        try{
+            new Thread().sleep(1000);
+        }catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        avatar.setShoot(true);
+    }
+
     @FXML
     public void returnToMenu(MouseEvent mouseEvent) {
         SOUNDFOND.stop();

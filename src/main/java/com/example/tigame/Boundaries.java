@@ -109,6 +109,15 @@ public class Boundaries {
         boundaries = rightEntrance(boundaries);
         boundaries = infEntrance(boundaries);
 
+        boundaries[0][6] = 5;
+        boundaries[0][7] = 5;
+        boundaries[0][8] = 5;
+        boundaries[0][9] = 5;
+        boundaries[1][6] = 0;
+        boundaries[1][7] = 0;
+        boundaries[1][8] = 0;
+        boundaries[1][9] = 0;
+
         return boundaries;
     }
     private int[][] supEntrance(int[][] boundaries){

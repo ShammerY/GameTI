@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="649.0" prefWidth="789.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1 " fx:controller="com.example.tigame.VictoryMenuController">
+   <children>
+      <Canvas fx:id="cambasWin" height="660.0" layoutX="-7.0" layoutY="-4.0" width="805.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="388.0" layoutX="141.0" layoutY="132.0" strokeType="INSIDE" strokeWidth="5.0" width="507.0">
+         <fill>
+            <LinearGradient cycleMethod="REFLECT" endX="0.018957345971563955" endY="1.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color red="0.9700000286102295" green="0.468833327293396" />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color red="0.6971499919891357" green="0.0729999989271164" blue="0.7300000190734863" opacity="0.9122137427330017" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </fill>
+         <stroke>
+            <LinearGradient endX="1.0" endY="1.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color red="0.8500000238418579" green="1.0" />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color red="1.0" green="1.0" blue="1.0" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </stroke>
+      </Rectangle>
+      <Label layoutX="255.0" layoutY="283.0" prefHeight="84.0" prefWidth="157.0" text="SCORE :" textFill="WHITE" textOverrun="LEADING_ELLIPSIS">
+         <font>
+            <Font name="Algerian" size="34.0" />
+         </font>
+      </Label>
+      <Label layoutX="273.0" layoutY="142.0" prefHeight="122.0" prefWidth="246.0" text="VICTORY" textFill="#000fe8" textOverrun="LEADING_ELLIPSIS">
+         <font>
+            <Font name="Algerian" size="51.0" />
+         </font>
+      </Label>
+      <Label fx:id="scoreLv" layoutX="382.0" layoutY="267.0" prefHeight="115.0" prefWidth="143.0" text="3600" textFill="#d4e300" textOverrun="LEADING_ELLIPSIS">
+         <font>
+            <Font name="Algerian" size="51.0" />
+         </font>
+      </Label>
+      <Label fx:id="btMenu" layoutX="323.0" layoutY="411.0" onMousePressed="#returnMenu" prefHeight="77.0" prefWidth="143.0" text="mENU" textFill="#1600e3" textOverrun="LEADING_ELLIPSIS">
+         <font>
+            <Font name="Algerian" size="51.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

@@ -14,8 +14,10 @@ public class Enemy extends Drawing implements Runnable{
     private int frame;
     private int durability;
     private Vector direction;
+    private Vector initialPos;
     private boolean shot;
-    public Enemy(Vector pos,int id){
+    public Enemy(Vector pos,int id,Vector inPos){
+        this.initialPos = inPos;
         this.pos = pos;
         this.id = id;
         this.frame = 0;
@@ -37,6 +39,11 @@ public class Enemy extends Drawing implements Runnable{
                 break;
         }
     }
+
+    public Vector getInitialPos() {
+        return initialPos;
+    }
+
     private void setFlyingEye(){
         this.durability = 5;
         this.width = 50;
@@ -49,7 +56,7 @@ public class Enemy extends Drawing implements Runnable{
         setRandomDirection();
     }
     private void setSkeleton(){
-        this.durability = 2;
+        this.durability = 3;
         this.width = 40;
         this.heigh = 44;
         image = new Image[12];
@@ -60,7 +67,7 @@ public class Enemy extends Drawing implements Runnable{
         direction = new Vector(0,0);
     }
     private void setReaper(){
-        this.durability = 10;
+        this.durability = 8;
         this.width = 70;
         this.heigh = 70;
         image = new Image[8];
@@ -71,7 +78,7 @@ public class Enemy extends Drawing implements Runnable{
         direction = new Vector(0,0);
     }
     private void setZombie(){
-        this.durability = 5;
+        this.durability = 6;
         this.width = 50;
         this.heigh = 70;
         image = new Image[5];
@@ -81,7 +88,7 @@ public class Enemy extends Drawing implements Runnable{
         }
     }
     private void setStormHead(){
-        this.durability = 5;
+        this.durability = 6;
         this.width = 35;
         this.heigh = 70;
         image = new Image[9];
@@ -144,7 +151,6 @@ public class Enemy extends Drawing implements Runnable{
 
     @Override
     public void draw(GraphicsContext gc) {
-        System.out.println("frame"+id);
         gc.drawImage(image[frame],pos.getX(),pos.getY(),this.width,this.heigh);
     }
 

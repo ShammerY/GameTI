@@ -5,12 +5,25 @@ import javafx.scene.image.Image;
 import java.util.ArrayList;
 
 public class GameUI {
+    private int avatarLives;
     private ArrayList<Image> hearts;
     private Image ammo;
-    public GameUI(){
+    private Image finishBlock;
+    public GameUI(int aLives){
         hearts = new ArrayList<>();
+        this.avatarLives = aLives;
+        setFinishBlock();
         setHearts();
         setAmmoUI();
+    }
+
+    private void setFinishBlock() {
+        String uri = "file:"+GameApplication.class.getResource("Border/finishBlock.png").getPath();
+        this.finishBlock = new Image(uri);
+    }
+
+    public Image getFinishBlock() {
+        return finishBlock;
     }
 
     private void setAmmoUI() {
@@ -19,7 +32,7 @@ public class GameUI {
     }
 
     private void setHearts(){
-        for(int i=0;i<3;i++){
+        for(int i=0;i<avatarLives;i++){
             String p = "file:"+GameApplication.class.getResource("gameUI/Heart1.png").getPath();
             //String uri = "file:"+GameApplication.class.getResource("rainbowMan_idle/rainbowMan-idle"+(i+1)+".png").getPath();
             Image image = new Image(p);

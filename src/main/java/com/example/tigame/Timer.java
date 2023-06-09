@@ -20,7 +20,6 @@ public class Timer implements Runnable{
             }else{
                 interval++;
             }
-            System.out.println(interval);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

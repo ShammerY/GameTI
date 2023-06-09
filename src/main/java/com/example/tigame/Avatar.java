@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 public class Avatar extends Drawing implements Runnable{
     private boolean isRunning = false;
     private boolean isFacingRight = true;
+    private boolean shoot = true;
     private int id;
     private Image[] idle;
     private Image[] run;
@@ -14,7 +15,7 @@ public class Avatar extends Drawing implements Runnable{
     private int frame;
     public Avatar(int id){
         this.id = id;
-        durability = 3;
+        durability = 4;
         frame = 0;
         pos.setX(400);
         pos.setY(300);
@@ -24,6 +25,15 @@ public class Avatar extends Drawing implements Runnable{
         run = new Image[6];
         setAvatarImage();
     }
+
+    public boolean isShoot() {
+        return shoot;
+    }
+
+    public void setShoot(boolean shoot) {
+        this.shoot = shoot;
+    }
+
     public Image[] getImageIdle(){return this.idle;}
     public Image[] getImageRun(){return this.run;}
     public void setWidth(int n){this.width = n;}

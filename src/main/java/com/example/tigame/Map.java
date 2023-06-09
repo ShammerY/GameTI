@@ -10,10 +10,12 @@ public class Map {
     private ArrayList<Bullet> bullets;
     private ArrayList<Enemy> enemies;
     private int[][] boundaries;
+    private ArrayList<Obstacle> lockedBlocks;
     private ArrayList<Obstacle> obstacles;
     private int[] connections;
     private Color color;
     public Map(int id, int[][] boundaries,int[] connections){
+        this.lockedBlocks = new ArrayList<>();
         this.boundaries = boundaries;
         this.connections = connections;
         obstacles = new ArrayList<>();
@@ -27,13 +29,15 @@ public class Map {
     }
     public void setObstacles(){
         Image borderImage = new Image("file:"+GameApplication.class.getResource("Border/Bricks"+(id+1)+".png").getPath());
-        Image obs = new Image("file:"+GameApplication.class.getResource("obstacles/barrel1.png").getPath());
+        Image lockedBlock = new Image("file:"+GameApplication.class.getResource("Border/BricksLocked.png").getPath());
         for(int i=0; i<12;i++){
             for(int j=0;j<16;j++){
                 if (boundaries[i][j] == 2){
                     obstacles.add(new Obstacle(new Vector((double)j*(800/16),(double)i*(600/12)),false,borderImage));
                 } else if (boundaries[i][j]==1){
                     obstacles.add(new Obstacle(new Vector((double)j*(800/16),(double)i*(600/12)),true,borderImage));
+                } else if(boundaries[i][j] == 5){
+                    lockedBlocks.add(new Obstacle(new Vector((double)j*(800/16),(double)i*(600/12)),false,lockedBlock));
                 }
             }
         }
@@ -47,13 +51,19 @@ public class Map {
             enemyId = (int)Math.floor(Math.random()*5+1);
             x =(int)Math.floor(Math.random()*14+1);
             y =(int)Math.floor(Math.random()*10+1);
+            Vector inPos = new Vector(x*((double)800/16),y*((double)600/12));
             if(boundaries[y][x]==0){
-                enemies.add(new Enemy(new Vector(x*(800/16),y*(600/12)),enemyId));
+                enemies.add(new Enemy(new Vector(inPos.getX(),inPos.getY()),enemyId,inPos));
             }else{
                 i--;
             }
         }
     }
+
+    public ArrayList<Obstacle> getLockedBlocks() {
+        return lockedBlocks;
+    }
+
     public void clearBullets(){
         while(bullets.size()>0){
             bullets.remove(bullets.get(0));
@@ -87,5 +97,13 @@ public class Map {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+
+    public void resetEnemyPos() {
+        for(Enemy e:enemies){
+            e.pos.setX(e.getInitialPos().getX());
+            e.pos.setY(e.getInitialPos().getY());
+        }
     }
 }
