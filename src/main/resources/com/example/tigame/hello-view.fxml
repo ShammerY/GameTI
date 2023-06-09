@@ -129,5 +129,10 @@
             </Label>
          </children>
       </Pane>
+      <Label fx:id="enemyCountLB" alignment="BOTTOM_CENTER" layoutX="55.0" layoutY="550.0" prefHeight="25.0" prefWidth="75.0" text="20">
+         <font>
+            <Font name="Bodoni MT Italic" size="40.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

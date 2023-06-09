@@ -47,7 +47,7 @@ public class MenuWindowController implements Initializable {
     @FXML
     void playGame(MouseEvent event) {
         GameApplication.openWindow("hello-view.fxml");
-        Stage stage = (Stage) scoresBT.getScene().getWindow();
+        Stage stage = (Stage) playBT.getScene().getWindow();
         stage.close();
     }
 
@@ -59,7 +59,6 @@ public class MenuWindowController implements Initializable {
         gc.drawImage(image,0,0,canvas.getWidth(),canvas.getHeight());
         playBT.setTextFill(Color.PURPLE);
         charactersBT.setTextFill(Color.PURPLE);
-        scoresBT.setTextFill(Color.PURPLE);
         setCharacterVisual();
     }
     private void setCharacterVisual(){

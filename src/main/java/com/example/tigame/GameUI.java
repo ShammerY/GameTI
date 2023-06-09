@@ -7,14 +7,24 @@ import java.util.ArrayList;
 public class GameUI {
     private int avatarLives;
     private ArrayList<Image> hearts;
+    private Image zombieHead;
     private Image ammo;
     private Image finishBlock;
     public GameUI(int aLives){
         hearts = new ArrayList<>();
         this.avatarLives = aLives;
         setFinishBlock();
+        setZombieHead();
         setHearts();
         setAmmoUI();
+    }
+    private void setZombieHead(){
+        String uri = "file:"+GameApplication.class.getResource("gameUI/zombieHead.png").getPath();
+        this.zombieHead = new Image(uri);
+    }
+
+    public Image getZombieHead() {
+        return zombieHead;
     }
 
     private void setFinishBlock() {

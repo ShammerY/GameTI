@@ -8,6 +8,8 @@ public class Avatar extends Drawing implements Runnable{
     private boolean isRunning = false;
     private boolean isFacingRight = true;
     private boolean shoot = true;
+    private Weapon weapon;
+    private boolean isArmed = false;
     private int id;
     private Image[] idle;
     private Image[] run;
@@ -24,6 +26,22 @@ public class Avatar extends Drawing implements Runnable{
         idle = new Image[5];
         run = new Image[6];
         setAvatarImage();
+    }
+
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    public boolean isArmed() {
+        return isArmed;
+    }
+
+    public void setArmed(boolean armed) {
+        isArmed = armed;
+    }
+
+    public void setWeapon(Weapon weapon){
+        this.weapon = weapon;
     }
 
     public boolean isShoot() {

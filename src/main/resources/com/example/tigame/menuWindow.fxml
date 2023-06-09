@@ -23,11 +23,6 @@
                   <Font name="Bodoni MT Black" size="45.0" />
                </font>
             </Label>
-            <Label fx:id="scoresBT" alignment="CENTER" contentDisplay="CENTER" onMouseClicked="#displayScores" onMouseEntered="#mouseEnteredScores" onMouseExited="#mouseExitedScores" prefHeight="54.0" prefWidth="303.0" text="SCORES" textFill="#a4468d">
-               <font>
-                  <Font name="Bodoni MT Black" size="45.0" />
-               </font>
-            </Label>
          </children>
       </VBox>
       <Label fx:id="exitBT" alignment="CENTER" contentDisplay="CENTER" layoutX="14.0" layoutY="14.0" onMouseClicked="#exitProgram" onMouseEntered="#mouseEnteredExit" onMouseExited="#mouseExitedExit" prefHeight="43.0" prefWidth="148.0" text="EXIT" textFill="#a4468d">
@@ -37,5 +32,10 @@
       </Label>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#92669e" height="175.0" layoutX="611.0" layoutY="422.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="5.0" width="175.0" />
       <ImageView fx:id="characterIV" fitHeight="150.0" fitWidth="150.0" layoutX="624.0" layoutY="435.0" pickOnBounds="true" preserveRatio="true" />
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="120.0" layoutY="79.0" prefHeight="59.0" prefWidth="561.0" text="NEBULA OF DEATH" textFill="#ab2f2f">
+         <font>
+            <Font name="Bodoni MT Black" size="50.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
